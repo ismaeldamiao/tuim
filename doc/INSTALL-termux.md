@@ -53,7 +53,7 @@ Now you need to build the commad line interface.
 ```bash
 cd src-cli
 mkdir .build
-clang -fPIE -I../src-loader -o .build/tuim tuim.c ../src-loader/.build/libtuim.o
+clang -fPIE -I../src-loader/include -o .build/tuim tuim.c ../src-loader/.build/libtuim.o
 cd ..
 ```
 

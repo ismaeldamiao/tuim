@@ -35,7 +35,7 @@ cmake --build .build
 
 # To build manually using a POSIX shell
 mkdir .build
-cc -fPIE -I../src-loader -o .build/tuim tuim.c ../src-loader/.build/libtuim.o
+cc -fPIE -I../src-loader/include -o .build/tuim tuim.c ../src-loader/.build/libtuim.o
 ```
 
 ## Donation
