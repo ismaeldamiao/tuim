@@ -1,0 +1,12 @@
+[
+   {
+      "key": "CTRL+SHIFT+U",
+      "command": "editor.action.transformToUppercase",
+      "when": "editorTextFocus"
+   },
+   {
+      "key": "CTRL+SHIFT+L",
+      "command": "editor.action.transformToLowercase",
+      "when": "editorTextFocus"
+   }
+]
