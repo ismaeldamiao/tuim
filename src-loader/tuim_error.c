@@ -7,4 +7,5 @@
 ------------------------------------ */
 
 unsigned int tuim_error;
+char *tuim_error_filename = NULL;
 elf_list *tuim_loaded = NULL;

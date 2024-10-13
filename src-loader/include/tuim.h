@@ -5,6 +5,7 @@
 Error codes
 --- */
 extern unsigned int tuim_error;
+extern char *tuim_error_filename;
 #define TUIM_NO_ERROR             0x0000U
 #define TUIM_ERROR_MEMORY         0x0001U
 #define TUIM_ERROR_READING        0x0002U

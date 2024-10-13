@@ -2,7 +2,7 @@
    MIT License
 
    Copyright (c) 2005-2020 Rich Felker, et al.
-   Copyright (c) 2024 I.F.F. dos Santos
+   Copyright (c) 2024 I.F.F. dos Santos <ismaellxd@gmail.com>
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the “Software”), to
@@ -666,27 +666,27 @@ typedef uint8_t Elf64_Syminfo[4];
 
 
 
-#define PT_NULL  0
-#define PT_LOAD  1
-#define PT_DYNAMIC 2
-#define PT_INTERP 3
-#define PT_NOTE  4
-#define PT_SHLIB 5
-#define PT_PHDR  6
-#define PT_TLS  7
-#define PT_NUM  8
-#define PT_LOOS  0x60000000
-#define PT_GNU_EH_FRAME 0x6474e550
-#define PT_GNU_STACK 0x6474e551
-#define PT_GNU_RELRO 0x6474e552
-#define PT_GNU_PROPERTY 0x6474e553
-#define PT_LOSUNW 0x6ffffffa
-#define PT_SUNWBSS 0x6ffffffa
-#define PT_SUNWSTACK 0x6ffffffb
-#define PT_HISUNW 0x6fffffff
-#define PT_HIOS  0x6fffffff
-#define PT_LOPROC 0x70000000
-#define PT_HIPROC 0x7fffffff
+#define PT_NULL         UINT32_C(0)
+#define PT_LOAD         UINT32_C(1)
+#define PT_DYNAMIC      UINT32_C(2)
+#define PT_INTERP       UINT32_C(3)
+#define PT_NOTE         UINT32_C(4)
+#define PT_SHLIB        UINT32_C(5)
+#define PT_PHDR         UINT32_C(6)
+#define PT_TLS          UINT32_C(7)
+#define PT_NUM          UINT32_C(8)
+#define PT_LOOS         UINT32_C(0x60000000)
+#define PT_GNU_EH_FRAME UINT32_C(0x6474e550)
+#define PT_GNU_STACK    UINT32_C(0x6474e551)
+#define PT_GNU_RELRO    UINT32_C(0x6474e552)
+#define PT_GNU_PROPERTY UINT32_C(0x6474e553)
+#define PT_LOSUNW       UINT32_C(0x6ffffffa)
+#define PT_SUNWBSS      UINT32_C(0x6ffffffa)
+#define PT_SUNWSTACK    UINT32_C(0x6ffffffb)
+#define PT_HISUNW       UINT32_C(0x6fffffff)
+#define PT_HIOS         UINT32_C(0x6fffffff)
+#define PT_LOPROC       UINT32_C(0x70000000)
+#define PT_HIPROC       UINT32_C(0x7fffffff)
 
 
 #define PN_XNUM 0xffff

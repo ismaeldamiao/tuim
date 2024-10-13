@@ -1,7 +1,7 @@
 /* *****************************************************************************
    MIT License
 
-   Copyright (c) 2024 I.F.F. dos Santos
+   Copyright (c) 2024 I.F.F. dos Santos <ismaellxd@gmail.com>
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the “Software”), to
@@ -68,25 +68,30 @@ void tuim_free(tuim_elf *elf){
             for(uint16_t i = UINT16_C(1); i < e_shnum; ++i){
                bool free_it;
                size_t sh_size;
-               uintptr_t sh_offset;
+               uint32_t sh_flags;
+               uintptr_t sh_addr;
 
                free_it = true;
                sh_size = ELF_SH_SIZE(shdr[i]);
-               sh_offset = ELF_SH_OFFSET(shdr[i]);
+               sh_addr = ELF_SH_OFFSET(shdr[i]);
+               sh_flags = ELF_SH_FLAGS(shdr[i]);
 
-               for(uint16_t j = UINT16_C(0); j < e_phnum; ++j){
-                  size_t p_memsz;
-                  uintptr_t p_offset;
+               if(sh_flags & SHF_ALLOC){
+                  for(uint16_t j = UINT16_C(0); j < e_phnum; ++j)
+                  if(ELF_P_TYPE(phdr[j]) == PT_LOAD){
+                     uintptr_t p_vaddr;
+                     size_t p_memsz;
 
-                  p_memsz = ELF_P_MEMSZ(phdr[j]);
-                  p_offset = ELF_P_OFFSET(phdr[j]);
+                     p_vaddr = ELF_P_VADDR(phdr[j]);
+                     p_memsz = (size_t)ELF_P_MEMSZ(phdr[j]);
 
-                  if(
-                     (sh_offset >= p_offset) &&
-                     (sh_offset + sh_size) <= (p_offset + p_memsz)
-                  ){
-                     free_it = false;
-                     break;
+                     if(
+                        (sh_addr >= p_vaddr) &&
+                        ((sh_addr + sh_size) <= (p_vaddr + p_memsz))
+                     ){
+                        free_it = false;
+                        break;
+                     }
                   }
                }
                if(free_it) free(elf->sections[i]);
@@ -96,8 +101,40 @@ void tuim_free(tuim_elf *elf){
          }
 
          if(phdr){
-            for(uint16_t i = UINT16_C(0); i < e_phnum; ++i)
-               free(elf->segments[i]);
+            for(uint16_t i = UINT16_C(0); i < e_phnum; ++i){
+               bool free_it;
+               size_t p_memsz;
+               uint32_t p_type;
+               uintptr_t p_vaddr;
+
+               p_type = ELF_P_TYPE(phdr[i]);
+               if(p_type == PT_LOAD){
+                  free(elf->segments[i]);
+                  continue;
+               }
+
+               p_vaddr = ELF_P_VADDR(phdr[i]);
+               p_memsz = (size_t)ELF_P_MEMSZ(phdr[i]);
+               elf->segments[i] = NULL;
+
+               for(uint16_t j = UINT16_C(0); j < e_phnum; ++j){
+                  uintptr_t pp_vaddr;
+                  size_t pp_memsz;
+
+                  if(ELF_P_TYPE(phdr[j]) != PT_LOAD) continue;
+
+                  pp_vaddr = ELF_P_VADDR(phdr[j]);
+                  pp_memsz = (size_t)ELF_P_MEMSZ(phdr[j]);
+                  if(
+                     (p_vaddr >= pp_vaddr) &&
+                     ((p_vaddr + p_memsz) <= (pp_vaddr + pp_memsz))
+                  ){
+                     free_it = false;
+                     break;
+                  }
+               }
+               if(free_it)free(elf->segments[i]);
+            }
             free(elf->segments);
             free(elf->phdr);
          }

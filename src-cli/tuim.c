@@ -44,21 +44,21 @@ int main(int argc, char **argv){
    elf = tuim_loader(argv[1]);
    if(tuim_error != TUIM_NO_ERROR){
       if(tuim_error == TUIM_ERROR_MEMORY)
-         fputs("Unsuficient memory.\n", stderr);
+         fprintf(stderr, "%s: Unsuficient memory.\n", tuim_error_filename);
       else if(tuim_error == TUIM_ERROR_READING)
-         fputs("Error reading the file.\n", stderr);
+         fprintf(stderr, "%s: Error reading the file.\n", tuim_error_filename);
       else if(tuim_error == TUIM_ERROR_INVALIDELF)
-         fputs("Not a valid ELF file.\n", stderr);
+         fprintf(stderr, "%s: Not a valid ELF file.\n", tuim_error_filename);
       else if(tuim_error == TUIM_ERROR_MACHINE)
-         fputs("The ELF image is not for this machine.\n", stderr);
+         fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
       else if(tuim_error == TUIM_ERROR_SYSTEM)
-         fputs("The ELF image is not for this machine.\n", stderr);
+         fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
       else if(tuim_error == TUIM_ERROR_NOTDYN)
-         fputs("The ELF image is not a shared object.\n", stderr);
+         fprintf(stderr, "%s: The ELF image is not a shared object.\n", tuim_error_filename);
       else if(tuim_error == TUIM_ERROR_MACHINE)
-         fputs("The ELF image is not for this machine.\n", stderr);
+         fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
       else if(tuim_error == TUIM_ERROR_UNSUPPORTED_RT)
-         fputs("Unsupported relocation type.\n", stderr);
+         fprintf(stderr, "%s: Unsupported relocation type.\n", tuim_error_filename);
       return EXIT_FAILURE;
    }
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv){
    if(main_){
       return_code = ((int(*)(int,char**))main_)(--argc, ++argv);
    }else{
-      fputs("Can't find the entry point.\n", stderr);
+      fprintf(stderr, "%s: Can't find the entry point.\n", argv[1]);
       return_code = EXIT_FAILURE;
    }
 
