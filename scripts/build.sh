@@ -1,22 +1,17 @@
 #!/usr/bin/env sh
 
-if [ "${CC}" == "" ]; then
-   CC=clang
-fi
+[ "${CC}" == "" ]     && export CC=clang
+[ "${PREFIX}" == "" ] && export PREFIX="/usr"
 
-if [ "${PREFIX}" == "" ]; then
-   TUIM_HOME="/usr/lib/tuim"
-else
-   TUIM_HOME="${PREFIX}/lib/tuim"
-fi
+TUIM_HOME="${PREFIX}/lib/tuim"
 
 ####
 # BUILD
 #####
 
-if [ ! -d ".build" ]; then
+[ ! -d ".build" ] && {
    mkdir ".build" || exit $?
-fi
+}
 
 ${CC} -c -fPIC \
    -DTUIM_HOME="\"${TUIM_HOME}\"" \

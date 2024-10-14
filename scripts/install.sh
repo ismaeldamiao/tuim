@@ -1,22 +1,16 @@
 #!/usr/bin/env sh
 
-if [ "${CC}" == "" ]; then
-   CC=clang
-fi
+[ "${PREFIX}" == "" ] && export PREFIX="/usr"
 
-if [ "${PREFIX}" == "" ]; then
-   TUIM_HOME="/usr/lib/tuim"
-else
-   TUIM_HOME="${PREFIX}/lib/tuim"
-fi
+TUIM_HOME="${PREFIX}/lib/tuim"
 
-if [ ! -d ".build" ] || [ ! -r ".build/tuim" ]; then
+[ ! -d ".build" ] || [ ! -r ".build/tuim" ] && {
    bash scripts/build.sh || exit $?
-fi
+}
 
-if [ ! -d "${TUIM_HOME}" ]; then
+[ ! -d "${TUIM_HOME}" ] && {
    mkdir -p "${TUIM_HOME}/{bin,include,lib}" || exit $?
-fi
+}
 
 ####
 # INSTALL
