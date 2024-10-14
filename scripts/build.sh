@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
 
-if [[ "${CC}" == "" ]]; then
+if [ "${CC}" == "" ]; then
    CC=clang
 fi
 
-if [[ "${PREFIX}" == "" ]]; then
+if [ "${PREFIX}" == "" ]; then
    TUIM_HOME="/usr/lib/tuim"
 else
    TUIM_HOME="${PREFIX}/lib/tuim"
@@ -14,18 +14,18 @@ fi
 # BUILD
 #####
 
-if [[ ! -d ".build" ]]; then
-   mkdir ".build"
+if [ ! -d ".build" ]; then
+   mkdir ".build" || exit $?
 fi
 
 ${CC} -c -fPIC \
    -DTUIM_HOME="\"${TUIM_HOME}\"" \
    -o .build/libtuim.o \
-   src-loader/libtuim.c
+   src-loader/libtuim.c || exit $?
 
 ${CC} -fPIE \
    -I src-loader/include \
    -o .build/tuim \
-   src-cli/tuim.c .build/libtuim.o
+   src-cli/tuim.c .build/libtuim.o || exit $?
 
 exit 0
