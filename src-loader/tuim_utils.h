@@ -11,6 +11,85 @@
 #include "include/tuim.h"
 #include "elf.h"
 
+/* ------------------------------------
+   Determine processor
+------------------------------------ */
+#if defined(__ARM_ARCH)
+   /* Macros defined by ARM Compiler are considered here
+      the standard if compiling for ARM target. */
+   #if __ARM_ARCH >= 8
+      #define ELFCLASS      ELFCLASS64
+      #if defined(__ARM_BIG_ENDIAN)
+         #define ELFDATA    ELFDATA2MSB
+      #else
+         #define ELFDATA    ELFDATA2LSB
+      #endif
+      #define EM_           EM_AARCH64
+   #elif __ARM_ARCH <= 7
+      #define ELFCLASS      ELFCLASS32
+      #if defined(__ARM_BIG_ENDIAN)
+         #define ELFDATA    ELFDATA2MSB
+      #else
+         #define ELFDATA    ELFDATA2LSB
+      #endif
+      #define EM_           EM_ARM
+   #endif
+#elif defined(__x86_64__)
+   /* FIXME: Macros defined by LLVM CLang are considered here
+      the standard when compiling for x86 target. */
+   #define ELFCLASS      ELFCLASS64
+   #define ELFDATA       ELFDATA2LSB
+   #define EM_           EM_X_86_64
+#elif defined(__i386__)
+   #define ELFCLASS      ELFCLASS32
+   #define ELFDATA       ELFDATA2LSB
+   #define EM_           EM_386
+#elif defined(__riscv)
+   /* Macros defined by RISC-V C API are considered
+      here the standard when compiling for RISC-V target. */
+   #if __riscv_xlen == 64
+      #define ELFCLASS      ELFCLASS64
+      #define EM_           EM_RISCV
+   #elif __riscv_xlen == 32
+      #define ELFCLASS      ELFCLASS32
+      #define EM_           EM_RISCV
+   #endif
+#else
+   #error "Unsupported processor."
+#endif
+
+#if ELFCLASS == ELFCLASS64
+   typedef uint64_t uintN_t;
+   typedef int64_t intN_t;
+#elif ELFCLASS == ELFCLASS32
+   typedef uint32_t uintN_t;
+   typedef int32_t intN_t;
+#endif // USE_ELF64
+
+/* ------------------------------------
+   Determine endianness
+------------------------------------ */
+#if !defined(ELFDATA)
+   #if defined(__GNUC__)
+      #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+         #define ELFDATA    ELFDATA2MSB
+      #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+         #define ELFDATA    ELFDATA2LSB
+      #endif // __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+   #elif __STDC_VERSION__ >= 202311L
+      #include <stdbit.h>
+      #if __STDC_ENDIAN_NATIVE__ == __STDC_ENDIAN_BIG__
+         #define ELFDATA    ELFDATA2MSB
+      #elif __STDC_ENDIAN_NATIVE__ == __STDC_ENDIAN_LITTLE__
+         #define ELFDATA    ELFDATA2LSB
+      #else
+         #error "Unsupported endianness."
+      #endif // __STDC_ENDIAN_NATIVE__ == __STDC_ENDIAN_BIG__
+   #else
+      #error "Can't determite endianness."
+   #endif // defined(__GNUC__)
+#endif // !defined(ELFDATA)
+
 #define segment_base_addr(elf, phndx) (\
    (uint8_t*)((elf)->segments[phndx]) - \
    ELF_P_VADDR(((Elf_Phdr*)((elf)->phdr))[phndx])\

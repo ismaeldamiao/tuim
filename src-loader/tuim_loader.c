@@ -31,7 +31,6 @@
 
 #include "include/tuim.h"
 #include "elf.h"
-#include "machine.h"
 
 #include "tuim_utils.h"
 /* ------------------------------------
