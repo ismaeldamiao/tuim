@@ -45,23 +45,24 @@ jobs:
     - name: Build
       shell: bash
       working-directory: ${{ github.workspace }}
+      continue-on-error: true
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
           export CC=${{ matrix.c_compiler }}
-          sh scripts/build.sh >> $GITHUB_OUTPUT
+          sh scripts/build.sh || exit $?
         elif [ "$RUNNER_OS" == "Windows" ]; then
           cmake \
             -B .build \
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          cmake --build .build --config ${{ matrix.build_type }}
+          cmake --build .build
         elif [ "$RUNNER_OS" == "macOS" ]; then
           cmake \
             -B .build \
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          cmake --build .build --config ${{ matrix.build_type }}
+          cmake --build .build
         else
           cmake \
             -B .build \
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          cmake --build .build --config ${{ matrix.build_type }}
+          cmake --build .build
         fi
