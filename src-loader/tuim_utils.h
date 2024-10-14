@@ -39,7 +39,7 @@
       the standard when compiling for x86 target. */
    #define ELFCLASS      ELFCLASS64
    #define ELFDATA       ELFDATA2LSB
-   #define EM_           EM_X_86_64
+   #define EM_           EM_X86_64
 #elif defined(__i386__)
    #define ELFCLASS      ELFCLASS32
    #define ELFDATA       ELFDATA2LSB

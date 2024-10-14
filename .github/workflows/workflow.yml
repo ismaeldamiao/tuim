@@ -52,19 +52,16 @@ jobs:
         elif [ "$RUNNER_OS" == "Windows" ]; then
           cmake \
             -B .build \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-            -S ${{ github.workspace }}
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           cmake --build .build --config ${{ matrix.build_type }}
         elif [ "$RUNNER_OS" == "macOS" ]; then
           cmake \
             -B .build \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-            -S ${{ github.workspace }}
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           cmake --build .build --config ${{ matrix.build_type }}
         else
           cmake \
             -B .build \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-            -S ${{ github.workspace }}
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           cmake --build .build --config ${{ matrix.build_type }}
         fi
