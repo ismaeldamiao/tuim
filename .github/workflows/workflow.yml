@@ -48,7 +48,7 @@ jobs:
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
           export CC=${{ matrix.c_compiler }}
-          sh scripts/build.sh
+          sh scripts/build.sh >> $GITHUB_OUTPUT
         elif [ "$RUNNER_OS" == "Windows" ]; then
           cmake \
             -B .build \
