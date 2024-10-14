@@ -282,7 +282,7 @@ static void findsymbol(
                      str + ELF_ST_NAME(syms[j])
                   ) == 0){
                      uint16_t st_shndx;
-                     uint8_t *sh_addr, st_bind;;
+                     uint8_t st_bind;
 
                      st_shndx = ELF_ST_SHNDX(syms[j]);
                      st_bind = ELF_ST_BIND(syms[j]);

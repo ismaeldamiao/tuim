@@ -113,6 +113,7 @@ void tuim_free(tuim_elf *elf){
                   continue;
                }
 
+               free_it = true;
                p_vaddr = ELF_P_VADDR(phdr[i]);
                p_memsz = (size_t)ELF_P_MEMSZ(phdr[i]);
                elf->segments[i] = NULL;

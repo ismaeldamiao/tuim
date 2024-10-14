@@ -54,7 +54,7 @@ static void* aligned_alloc(size_t alignment, size_t size){
       return buf;
    else
       return NULL;
-};
+}
 #endif /* __ANDROID_API__ >= 28 */
 #endif /* __ANDROID_API__ */
 
@@ -228,7 +228,6 @@ tuim_elf* tuim_loader(const char *file_path){
       e_phnum = ELF_E_PHNUM(*ehdr);
 
       if(e_phnum != UINT16_C(0)){
-         size_t phdr_size;
          uint16_t e_phentsize;
          uintptr_t e_phoff;
 
@@ -343,7 +342,6 @@ tuim_elf* tuim_loader(const char *file_path){
       e_shnum = ELF_E_SHNUM(*ehdr);
 
       if(e_shnum != UINT16_C(0)){
-         size_t shdr_size;
          uint16_t e_shentsize;
          uintptr_t e_shoff;
 
@@ -458,7 +456,7 @@ tuim_elf* tuim_loader(const char *file_path){
          size_t d_val;
          uint8_t *soname;
          tuim_elf *dep;
-         elf_list *dependencies, *node;
+         elf_list *node;
 
          d_val = ELF_D_UN(dyn[i]);
          soname = strtab + d_val;
@@ -508,7 +506,6 @@ tuim_elf* tuim_loader(const char *file_path){
       // Loop on dynamic section entries
       for(uint16_t i = UINT16_C(0); i < dyn_num; ++i)
       if((d_tag = ELF_D_TAG(dyn[i]), (d_tag == DT_REL) || (d_tag == DT_RELA))){
-         Elf_Shdr *rel_sec;
          void *reltab; // Handle both Elf_Rel[] and Elf_Rela[]
          uint8_t *rel_base_addrs, *strtab;
          uint16_t rel_shndx;
@@ -543,8 +540,7 @@ tuim_elf* tuim_loader(const char *file_path){
          // Loop on relocation table entries
          for(uint32_t j = UINT32_C(0); j < relnum; ++j){
             void *rel;
-            Elf_Sym *sym;
-            uintN_t st_value, r_type, r_sym;
+            uintN_t r_type, r_sym;
             intptr_t r_offset;
 
             if(d_tag == DT_REL)
@@ -552,9 +548,9 @@ tuim_elf* tuim_loader(const char *file_path){
             else
                rel = (*(((Elf_Rela*)reltab) + j));
 
-            r_offset = ELF_R_OFFSET(rel);
-            r_sym = ELF_R_SYM(rel);
-            r_type = ELF_R_TYPE(rel);
+            r_offset = ELF_R_OFFSET((uint8_t*)rel);
+            r_sym = ELF_R_SYM((uint8_t*)rel);
+            r_type = ELF_R_TYPE((uint8_t*)rel);
 
             /* At this point, the only TODO is apply relocations,
                this is a processor dependent step.
@@ -574,6 +570,7 @@ AARCH32 relocations
    int32_t A;
    uint16_t st_shndx;
    uint32_t B, P, S;
+   Elf_Sym *sym;
 
    // Relocation types with no action
    if((r_type == R_ARM_TLS_DESC) || (r_type == R_ARM_COPY)) continue;
@@ -589,7 +586,7 @@ AARCH32 relocations
       > bits.
    */
    // The addend
-   A = ((d_tag == DT_REL) ? *((int32_t*)P) : ELF_R_ADDEND(rel));
+   A = ((d_tag == DT_REL) ? *((int32_t*)P) : ELF_R_ADDEND((uint8_t*)rel));
 
    // Base address of the symbol definition
    if(r_sym != UINT32_C(0)){

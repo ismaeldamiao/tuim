@@ -64,7 +64,6 @@ void* tuim_findsymbol(const char *symbol, const tuim_elf *elf){
                str + ELF_ST_NAME(syms[j])
             ) == 0){
                uint16_t st_shndx;
-               uint8_t *sh_addr;
                st_shndx = ELF_ST_SHNDX(syms[j]);
                if(st_shndx == STN_UNDEF)
                   return NULL;

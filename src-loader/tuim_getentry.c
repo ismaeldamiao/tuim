@@ -9,10 +9,8 @@ void* tuim_getentry(const tuim_elf *elf){
    uint16_t i;
    uintptr_t e_entry;
    Elf_Ehdr *ehdr;
-   Elf_Phdr *phdr;
 
    ehdr = elf->ehdr;
-   phdr = elf->phdr;
 
    e_entry = ELF_E_ENTRY(*ehdr);
    i = phndx(elf, e_entry);

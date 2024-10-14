@@ -45,7 +45,6 @@ jobs:
     - name: Build
       shell: bash
       working-directory: ${{ github.workspace }}
-      continue-on-error: true
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
           export CC=${{ matrix.c_compiler }}
