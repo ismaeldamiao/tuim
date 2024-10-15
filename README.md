@@ -1,4 +1,9 @@
-# Tuim
+
+<h1 align="center">Tuim</h1>
+
+> [!CAUTION]
+> This project is in beta stage, it may not work as espected
+> and it's API may change at any time.
 
 With Tuim you can execute your programs.
 
@@ -7,10 +12,10 @@ The Tuim's loader can execute the same binary on all these OS.
 
 ## The project
 
-- **Loader**: Tuim have a [library](src-loader)
+- **ELF Loader**: Tuim have a [library](src-loader)
    with a interface to load ELF files in memory and prepare it
    for execution.
-- **CLI**: The main interface for the loader is the
+- **CLI**: The main interface for the ELF loader is the
    [command line interface](src-cli), to execute programs from the
    command line.
 
@@ -25,10 +30,11 @@ ReactOS and Windows.
 
 The supported architectures are ARM, x86 and Risc V families.
 
-## Status
+## Author
 
-For now Tuim is in the beta stage of development and does not provide a
-stable software, but that will change on the first alpha release.
+I.F.F. dos Santos --
+[e-mail](ismaellxd@gmail.com) --
+[GitHub](https://github.com/ismaeldamiao).
 
 ## Donation
 

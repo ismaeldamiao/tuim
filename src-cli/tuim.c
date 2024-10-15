@@ -28,49 +28,58 @@
 /* ------------------------------------
    Interface for Tuim's ELF loader, to execute program from command line.
    * Part of tuim project.
-   * Last modified: Octubre 11, 2024.
+   * Last modified: Octubre 15, 2024.
 ------------------------------------ */
 
 int main(int argc, char **argv){
    tuim_elf *elf;
-   void* main_;
+   int(*main_)(int,char**);
    int return_code;
 
-   if(argc < 2){
-      fprintf(stderr, "Usage: %s <elf-file>\n", argv[0]);
-      return EXIT_FAILURE;
-   }
+   /* Validate argument. */
+   if(argc < 2) goto usage;
 
+   /* Load the executable, referenced in argv[1]. */
    elf = tuim_loader(argv[1]);
-   if(tuim_error != TUIM_NO_ERROR){
-      if(tuim_error == TUIM_ERROR_MEMORY)
-         fprintf(stderr, "%s: Unsuficient memory.\n", tuim_error_filename);
-      else if(tuim_error == TUIM_ERROR_READING)
-         fprintf(stderr, "%s: Error reading the file.\n", tuim_error_filename);
-      else if(tuim_error == TUIM_ERROR_INVALIDELF)
-         fprintf(stderr, "%s: Not a valid ELF file.\n", tuim_error_filename);
-      else if(tuim_error == TUIM_ERROR_MACHINE)
-         fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
-      else if(tuim_error == TUIM_ERROR_SYSTEM)
-         fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
-      else if(tuim_error == TUIM_ERROR_NOTDYN)
-         fprintf(stderr, "%s: The ELF image is not a shared object.\n", tuim_error_filename);
-      else if(tuim_error == TUIM_ERROR_MACHINE)
-         fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
-      else if(tuim_error == TUIM_ERROR_UNSUPPORTED_RT)
-         fprintf(stderr, "%s: Unsupported relocation type.\n", tuim_error_filename);
-      return EXIT_FAILURE;
-   }
+   if(elf == NULL) goto load_error;
 
-   main_ = tuim_getentry(elf);
-   if(main_){
-      return_code = ((int(*)(int,char**))main_)(--argc, ++argv);
-   }else{
-      fprintf(stderr, "%s: Can't find the entry point.\n", argv[1]);
-      return_code = EXIT_FAILURE;
-   }
+   /* Jump to the entry point. */
+   main_ = (int(*)(int,char**))tuim_getentry(elf);
+   if(main_ == NULL) goto jump_error;
+   return_code = main_(--argc, ++argv);
 
+   /* Free the memory and return. */
    tuim_free(elf);
-
    return return_code;
+
+   usage:
+
+   fprintf(stderr, "Usage: %s <elf-file>\n", argv[0]);
+   return EXIT_FAILURE;
+
+   load_error:
+
+   if(tuim_error == TUIM_ERROR_MEMORY)
+      fprintf(stderr, "%s: Unsuficient memory.\n", tuim_error_filename);
+   else if(tuim_error == TUIM_ERROR_READING)
+      fprintf(stderr, "%s: Error reading the file.\n", tuim_error_filename);
+   else if(tuim_error == TUIM_ERROR_INVALIDELF)
+      fprintf(stderr, "%s: Not a valid ELF file.\n", tuim_error_filename);
+   else if(tuim_error == TUIM_ERROR_MACHINE)
+      fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
+   else if(tuim_error == TUIM_ERROR_SYSTEM)
+      fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
+   else if(tuim_error == TUIM_ERROR_NOTDYN)
+      fprintf(stderr, "%s: The ELF image is not a shared object.\n", tuim_error_filename);
+   else if(tuim_error == TUIM_ERROR_MACHINE)
+      fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
+   else if(tuim_error == TUIM_ERROR_UNSUPPORTED_RT)
+      fprintf(stderr, "%s: Unsupported relocation type.\n", tuim_error_filename);
+
+   return EXIT_FAILURE;
+
+   jump_error:
+
+   fprintf(stderr, "%s: Can't find the entry point.\n", argv[1]);
+   return_code = EXIT_FAILURE;
 }

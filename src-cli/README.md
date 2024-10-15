@@ -1,4 +1,8 @@
-# Command Line Interface
+<h1 align="center">Command Line Interface</h1>
+
+> [!CAUTION]
+> This project is in beta stage, it may not work as espected
+> and it's API may change at any time.
 
 Command line interface for the Tuim's ELF loader,
 to execute your programs from the command line.
@@ -18,25 +22,39 @@ Some technical requirements, for developers, are:
 - Dependency libraries (shared objects) must be found on places
    indicated by the environment variable `LD_LIBRARY_PATH`
    or in the default place, indicated at compilation of the loader.
+- The entry point is called like if it is `int main(int argc, char **argcv);`.
 
-## Build
+## Compatibility
 
-You can build the loader with CMake.
+The command line interface by itself can be compiled for any
+system that support the Tuim's ELF loader.
 
-Requirements:
+## Building
 
-- CMake (optional)
-- a C compiler with support to C23.
+To build the loader you need:
+
+- C compiler (ISO C11 standard compliant).
+   - On Unix systems LLVM CLang or GCC are recommended.
+   - On Winsdows MSVC is recommended.
+- Tuim's ELF loader library.
+
+If you preffer, you can use CMake to build.
 
 ```bash
-# To buid with CMake
+# Buid using CMake
 cmake -B .build
 cmake --build .build
 
-# To build manually using a POSIX shell
+# Build using LLVM CLang
 mkdir .build
 cc -fPIE -I../src-loader/include -o .build/tuim tuim.c ../src-loader/.build/libtuim.o
 ```
+
+## Author
+
+I.F.F. dos Santos --
+[e-mail](ismaellxd@gmail.com) --
+[GitHub](https://github.com/ismaeldamiao).
 
 ## Donation
 
