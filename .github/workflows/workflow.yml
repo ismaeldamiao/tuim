@@ -57,11 +57,13 @@ jobs:
           sh scripts/build.sh || exit $?
           zip -r build.zip .build
         elif [ "$RUNNER_OS" == "Windows" ]; then
-          cmd /c scripts/build.bat || exit $?
+          cmd /k scripts/build.bat || exit $?
           jar -cfM build.zip .build
         elif [ "$RUNNER_OS" == "macOS" ]; then
-          export CC=${{ matrix.c_compiler }}
-          sh scripts/build.sh || exit $?
+          cmake \
+            -B .build \
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          cmake --build .build
           zip -r build.zip .build
         else
           cmake \
