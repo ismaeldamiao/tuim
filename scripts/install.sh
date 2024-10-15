@@ -9,7 +9,9 @@ TUIM_HOME="${PREFIX}/lib/tuim"
 }
 
 [ ! -d "${TUIM_HOME}" ] && {
-   mkdir -p "${TUIM_HOME}/{bin,include,lib}" || exit $?
+   mkdir -p "${TUIM_HOME}"/bin || exit $?
+   mkdir -p "${TUIM_HOME}"/include || exit $?
+   mkdir -p "${TUIM_HOME}"/lib || exit $?
 }
 
 ####

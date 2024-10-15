@@ -14,6 +14,16 @@
 /* ------------------------------------
    Determine processor
 ------------------------------------ */
+
+/* To support MSVC */
+#if _MSC_VER
+   #if defined(_M_IX86)
+      #define __i386__
+   #elif defined(_M_AMD64) && !defined(__ARM_ARCH)
+      #define __x86_64__
+   #endif
+#endif
+
 #if defined(__ARM_ARCH)
    /* Macros defined by ARM Compiler are considered here
       the standard if compiling for ARM target. */
@@ -114,7 +124,9 @@ typedef struct elf_list_s {
 extern elf_list *tuim_loaded;
 
 static int strcmp_(uint8_t *l, uint8_t *r){
-   for(; (*l == *r) && *l; ++l, ++r);
+   while((*l == *r) && *l){
+      ++l, ++r;
+   }
 	return (int)(*l - *r);
 }
 
