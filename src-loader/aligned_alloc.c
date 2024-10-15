@@ -52,6 +52,6 @@
          return _aligned_malloc(size, alignment);
       }
    #else
-      #error "aligned_alloc is needed but implemented."
+      #error "aligned_alloc is needed but not implemented."
    #endif /* defined(_MSC_VER) */
 #endif /* __ANDROID_API__ */

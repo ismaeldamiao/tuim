@@ -647,9 +647,10 @@ AARCH32 relocations
 #endif // __ARM_ARCH >= 8
 #elif defined(__x86_64__)
 /* ------------------------------------
-X86-64 relocations
+AMD64 relocations
 ------------------------------------ */
-   // TODO:
+   int64_t A;
+   uint64_t S, G, L, P, GOT, Z;
 #elif defined(__i386__)
 /* ------------------------------------
 i386 relocations
