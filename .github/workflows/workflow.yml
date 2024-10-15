@@ -57,7 +57,7 @@ jobs:
           sh scripts/build.sh || exit $?
           zip -r build.zip .build
         elif [ "$RUNNER_OS" == "Windows" ]; then
-          cmd /k scripts/build.bat || exit $?
+          cmd /k scripts\build.bat || exit $?
           jar -cfM build.zip .build
         elif [ "$RUNNER_OS" == "macOS" ]; then
           cmake \
