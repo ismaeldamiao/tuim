@@ -36,7 +36,7 @@
 /* ------------------------------------
    Function to load in memory an PIE (shared object, ELF file).
    * Part of tuim project.
-   * Last modified: Octubre 10, 2024.
+   * Last modified: Octubre 14, 2024.
 ------------------------------------ */
 
 //#define DBG(str, ...) fprintf(stdout, str, __VA_ARGS__)
@@ -45,18 +45,7 @@
 #define STATIC static
 #include "tuim_mprotect.c"
 #include "tuim_pathsearch.c"
-
-#ifdef __ANDROID_API__
-#if __ANDROID_API__ < 28
-static void* aligned_alloc(size_t alignment, size_t size){
-   void *buf;
-   if(posix_memalign(&buf, alignment, size) == 0)
-      return buf;
-   else
-      return NULL;
-}
-#endif /* __ANDROID_API__ >= 28 */
-#endif /* __ANDROID_API__ */
+#include "aligned_alloc.c"
 
 static bool haveslash(uint8_t *str){
    /* Value of '/' in the ASCII chart is 0x2f */
