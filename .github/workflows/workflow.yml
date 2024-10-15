@@ -56,7 +56,7 @@ jobs:
           export CC=${{ matrix.c_compiler }}
           sh scripts/build.sh || exit $?
         elif [ "$RUNNER_OS" == "Windows" ]; then
-          cmd /c scripts/build.bat
+          cmd /c scripts/build.bat || exit $?
         elif [ "$RUNNER_OS" == "macOS" ]; then
           cmake \
             -B .build \
