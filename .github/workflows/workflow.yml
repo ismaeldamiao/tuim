@@ -55,20 +55,21 @@ jobs:
         if [ "$RUNNER_OS" == "Linux" ]; then
           export CC=${{ matrix.c_compiler }}
           sh scripts/build.sh || exit $?
+          zip -r build.zip .build
         elif [ "$RUNNER_OS" == "Windows" ]; then
           cmd /c scripts/build.bat || exit $?
+          jar -cfM build.zip .build
         elif [ "$RUNNER_OS" == "macOS" ]; then
-          cmake \
-            -B .build \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          cmake --build .build
+          export CC=${{ matrix.c_compiler }}
+          sh scripts/build.sh || exit $?
+          zip -r build.zip .build
         else
           cmake \
             -B .build \
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           cmake --build .build
+          jar -cfM build.zip .build
         fi
-        zip -r build.zip .build
     - name: Archive output
       uses: actions/upload-artifact@v4
       with:
