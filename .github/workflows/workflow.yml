@@ -58,7 +58,7 @@ jobs:
           zip -r build.zip .build
         elif [ "$RUNNER_OS" == "Windows" ]; then
           echo "Calling scripts/build.bat."
-          cmd /c "CALL ${{ github.workspace }}\scripts\build.bat" || exit $?
+          cmd /c "${{ github.workspace }}\scripts\build.bat" || exit $?
           jar -cfM build.zip .build
         elif [ "$RUNNER_OS" == "macOS" ]; then
           cmake \
