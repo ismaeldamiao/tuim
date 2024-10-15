@@ -3,14 +3,21 @@
 set CC=cl.exe
 set TUIM_HOME=C:\Program Files
 
-if not exist ".build" mkdir ".build"
+if not exist ".build" (
+   mkdir ".build"
+   if %ERRORLEVEL% NEQ 0 (
+      exit /b %ERRORLEVEL%
+   )
+)
 
 %CC% ^
    /c ^
    /DTUIM_HOME="%TUIM_HOME%" ^
    /Fo.build/libtuim.obj ^
    src-loader\libtuim.c
-if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
+if %ERRORLEVEL% NEQ 0 (
+   exit /b %ERRORLEVEL%
+)
 
 %CC% ^
    /I src-loader\include ^
