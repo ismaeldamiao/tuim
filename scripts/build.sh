@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-[ "${CC}" == "" ]     && export CC=clang
-[ "${PREFIX}" == "" ] && export PREFIX="/usr"
+[ -z "${CC}" ]     && CC=clang
+[ -z "${PREFIX}" ] && PREFIX="/usr"
 
 TUIM_HOME="${PREFIX}/lib/tuim"
 

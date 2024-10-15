@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-[ "${PREFIX}" == "" ] && export PREFIX="/usr"
+[ -z "${PREFIX}" ] && PREFIX="/usr"
 
 TUIM_HOME="${PREFIX}/lib/tuim"
 
@@ -18,10 +18,6 @@ TUIM_HOME="${PREFIX}/lib/tuim"
 # INSTALL
 #####
 
-if [ "${PREFIX}" == "" ]; then
-   cp ".build/tuim" "/usr/bin/tuim" || exit $?
-else
-   cp ".build/tuim" "${PREFIX}/bin/tuim" || exit $?
-fi
+cp ".build/tuim" "${PREFIX}/bin/tuim" || exit $?
 
 exit 0
