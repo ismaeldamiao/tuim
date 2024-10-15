@@ -57,9 +57,10 @@ jobs:
           sh scripts/build.sh || exit $?
           zip -r build.zip .build
         elif [ "$RUNNER_OS" == "Windows" ]; then
-          echo "Calling scripts/build.bat."
-          'C:\WINDOWS\system32\cmd.exe' '/c' '""${{ github.workspace }}\scripts\build.bat""' || exit $?
-          jar -cfM build.zip .build
+          cmake \
+            -B .build \
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          cmake --build .build
         elif [ "$RUNNER_OS" == "macOS" ]; then
           cmake \
             -B .build \
