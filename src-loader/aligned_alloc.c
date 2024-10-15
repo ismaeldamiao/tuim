@@ -49,7 +49,9 @@
       #include <malloc.h>
       /* FIXME: You can get a error if use free(). */
       STATIC void* aligned_alloc(size_t alignment, size_t size){
-         return _aligned_alloc(size, alignment);
+         return _aligned_malloc(size, alignment);
       }
+   #else
+      #error "aligned_alloc is needed but implemented."
    #endif /* defined(_MSC_VER) */
 #endif /* __ANDROID_API__ */
