@@ -1,27 +1,32 @@
 @echo off
 
-set CC=cl.exe
-set TUIM_HOME=C:\Program Files
+set TUIM_HOME=C:\Program Files\tuim
 
 if not exist ".build" (
    mkdir ".build"
-   if %ERRORLEVEL% NEQ 0 (
-      exit /b %ERRORLEVEL%
+   if %errorlevel% NEQ 0 (
+      exit /b %errorlevel%
    )
 )
 
-%CC% ^
+echo Passou aqui 0!
+
+cl.exe ^
    /c ^
    /DTUIM_HOME="%TUIM_HOME%" ^
    /Fo.build/libtuim.obj ^
    src-loader\libtuim.c
-if %ERRORLEVEL% NEQ 0 (
-   exit /b %ERRORLEVEL%
+if %errorlevel% NEQ 0 (
+   exit /b %errorlevel%
 )
 
-%CC% ^
+echo Passou aqui 1!
+
+cl.exe ^
    /I src-loader\include ^
    /Fe.build/tuim.exe ^
    src-cli\tuim.c .build\libtuim.obj
 
-exit /b %ERRORLEVEL%
+echo Passou aqui 2!
+
+exit /b %errorlevel%
