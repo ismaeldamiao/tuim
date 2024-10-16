@@ -656,14 +656,16 @@ AARCH32 relocations
 AMD64 relocations
 ------------------------------------ */
    int64_t A;
+   uint16_t st_shndx;
    uint64_t S, G, L, Z;
    uintptr_t P, B, GOT;
+   Elf_Sym *sym;
 
    // Address of the symbol reference (place)
    P = (uintptr_t)(segment_base_addr(elf, phndx(elf, r_offset)) + r_offset);
 
 #if defined(__LP64__)
-   A = ELF_R_ADDEND(*(Elf_rela*)rel);
+   A = ELF_R_ADDEND(*(Elf_Rela*)rel);
 #endif // defined(__LP64__)
 
    // Base address of the symbol definition
@@ -685,7 +687,7 @@ AMD64 relocations
          }
 
          st_shndx = ELF_ST_SHNDX(*sym);
-         B = (uint32_t)section_base_addr(dep, st_shndx);
+         B = (uintptr_t)section_base_addr(dep, st_shndx);
       }
    }
 
