@@ -42,7 +42,7 @@ of interfaces implemented for the `tuim` project.
    For now the library can be compiled for Unix like systems and
    Windows.
 - **Processor:**
-   Support to ARM are partially implemented.
+   Support to ARM and AMD64 are partially implemented.
 
 ## Building
 

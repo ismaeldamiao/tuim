@@ -493,19 +493,21 @@ tuim_elf* tuim_loader(const char *file_path){
    if(dyn){
       size_t d_tag;
       // Loop on dynamic section entries
-      for(uint16_t i = UINT16_C(0); i < dyn_num; ++i)
-      if((d_tag = ELF_D_TAG(dyn[i]), (d_tag == DT_REL) || (d_tag == DT_RELA))){
+      for(uint16_t i = UINT16_C(0); i < dyn_num; ++i){
          void *reltab; // Handle both Elf_Rel[] and Elf_Rela[]
+         size_t relnum;
          uint8_t *rel_base_addrs, *strtab;
          uint16_t rel_shndx;
-         Elf_Sym *symtab;
          uint32_t sh_info, sh_link;
-         size_t relnum;
          uintptr_t d_ptr;
+         Elf_Sym *symtab;
+
+         d_tag = ELF_D_TAG(dyn[i]);
+         if((d_tag != DT_REL) && (d_tag != DT_RELA)) continue;
 
          // The relocation table
-         d_ptr = ELF_D_UN(dyn[i]); // It virtual address
-         rel_shndx = shndx(elf, d_ptr); // It section index
+         d_ptr = ELF_D_UN(dyn[i]); // reltab virtual address
+         rel_shndx = shndx(elf, d_ptr); // reltab section index
          reltab = elf->sections[rel_shndx];
 
          // The associated symbol table
@@ -513,7 +515,8 @@ tuim_elf* tuim_loader(const char *file_path){
          symtab = elf->sections[sh_link];
 
          // The associated string table
-         strtab = elf->sections[ELF_SH_LINK(shdr[sh_link])];
+         sh_link = ELF_SH_LINK(shdr[sh_link]);
+         strtab = elf->sections[sh_link];
 
          // The section to which relocation applies
          sh_info = ELF_SH_INFO(shdr[rel_shndx]);
@@ -527,9 +530,9 @@ tuim_elf* tuim_loader(const char *file_path){
          );
 
          // Loop on relocation table entries
-         for(uint32_t j = UINT32_C(0); j < relnum; ++j){
+         for(size_t j = UINT32_C(0); j < relnum; ++j){
             void *rel;
-            uintN_t r_type, r_sym;
+            uint32_t r_type, r_sym;
             intptr_t r_offset;
 
             if(d_tag == DT_REL)
@@ -538,8 +541,8 @@ tuim_elf* tuim_loader(const char *file_path){
                rel = (*(((Elf_Rela*)reltab) + j));
 
             r_offset = ELF_R_OFFSET((uint8_t*)rel);
-            r_sym = ELF_R_SYM((uint8_t*)rel);
-            r_type = ELF_R_TYPE((uint8_t*)rel);
+            r_sym = (uint32_t)ELF_R_SYM((uint8_t*)rel);
+            r_type = (uint32_t)ELF_R_TYPE((uint8_t*)rel);
 
             /* At this point, the only TODO is apply relocations,
                this is a processor dependent step.
@@ -551,7 +554,7 @@ tuim_elf* tuim_loader(const char *file_path){
 /* ------------------------------------
 AARCH64 relocations
 ------------------------------------ */
-   // TODO:
+   #error "Not implemented yet."
 #elif __ARM_ARCH <= 7
 /* ------------------------------------
 AARCH32 relocations
@@ -575,7 +578,7 @@ AARCH32 relocations
       > bits.
    */
    // The addend
-   A = ((d_tag == DT_REL) ? *((int32_t*)P) : ELF_R_ADDEND((uint8_t*)rel));
+   A = ((d_tag == DT_REL) ? *((int32_t*)P) : ELF_R_ADDEND(*(Elf_Rela*)rel));
 
    // Base address of the symbol definition
    if(r_sym != UINT32_C(0)){
@@ -587,6 +590,7 @@ AARCH32 relocations
          uint32_t st_name;
          tuim_elf *dep = NULL;
 
+         // The symbol is not defined in this files, find it on dependencies.
          st_name = ELF_ST_NAME(*sym);
          findsymbol(&dep, &sym, strtab + st_name, elf->sections[0]);
 
@@ -603,6 +607,8 @@ AARCH32 relocations
 
    // Relocation types that do not need symbol value
    if(r_type == R_ARM_RELATIVE){
+      /* RELATIVE relocations with undefined symbols use the addend
+         as the address of symbols definition. */
       if(r_sym == UINT32_C(0))
          B = (uint32_t)segment_base_addr(elf, phndx(elf, A));
       *((uint32_t*)P) = B + A;
@@ -650,23 +656,92 @@ AARCH32 relocations
 AMD64 relocations
 ------------------------------------ */
    int64_t A;
-   uint64_t S, G, L, P, GOT, Z;
+   uint64_t S, G, L, Z;
+   uintptr_t P, B, GOT;
+
+   // Address of the symbol reference (place)
+   P = (uintptr_t)(segment_base_addr(elf, phndx(elf, r_offset)) + r_offset);
+
+#if defined(__LP64__)
+   A = ELF_R_ADDEND(*(Elf_rela*)rel);
+#endif // defined(__LP64__)
+
+   // Base address of the symbol definition
+   if(r_sym != UINT32_C(0)){
+      sym = symtab + r_sym;
+      st_shndx = ELF_ST_SHNDX(*sym);
+      if(st_shndx != STN_UNDEF){
+         B = (uintptr_t)section_base_addr(elf, st_shndx);
+      }else{
+         uint32_t st_name;
+         tuim_elf *dep = NULL;
+
+         // The symbol is not defined in this files, find it on dependencies.
+         st_name = ELF_ST_NAME(*sym);
+         findsymbol(&dep, &sym, strtab + st_name, elf->sections[0]);
+
+         if(dep == NULL){
+            goto error;
+         }
+
+         st_shndx = ELF_ST_SHNDX(*sym);
+         B = (uint32_t)section_base_addr(dep, st_shndx);
+      }
+   }
+
+   if(r_type == R_X86_64_RELATIVE){
+#if defined(__ILP32__)
+      A = ((d_tag == DT_REL) ?
+         (int64_t)(*((int32_t*)P)) : ELF_R_ADDEND(*(Elf_Rela*)rel)
+      );
+#endif // defined(__ILP32__)
+      /* RELATIVE relocations with undefined symbols use the addend
+         as the address of symbols definition. */
+      if(r_sym == UINT32_C(0))
+         B = (uintptr_t)segment_base_addr(elf, phndx(elf, A));
+      *((wordclass*)P) = (wordclass)((uint64_t)B + A);
+      continue;
+   }
+#if defined(__ILP32__)
+   if(r_type == R_X86_64_RELATIVE64){
+      A = ((d_tag == DT_REL) ?
+         (int64_t)(*((int64_t*)P)) : ELF_R_ADDEND(*(Elf_Rela*)rel)
+      );
+      if(r_sym == UINT32_C(0))
+         B = (uintptr_t)segment_base_addr(elf, phndx(elf, A));
+      *((uint64_t*)P) = (uint64_t)B + A;
+      continue;
+   }
+#endif // defined(__ILP32__)
+
+   /* word8 relocations */
+   if(
+      (r_type == R_X86_64_8) || (r_type == R_X86_64_PC8)
+   ){
+
+#if defined(__ILP32__)
+      A = ((d_tag == DT_REL) ?
+         (int64_t)(*((int8_t*)P)) : ELF_R_ADDEND(*(Elf_Rela*)rel)
+      );
+#endif // defined(__ILP32__)
+   }
+
 #elif defined(__i386__)
 /* ------------------------------------
 i386 relocations
 ------------------------------------ */
-   // TODO:
+   #error "Not implemented yet."
 #elif defined(__riscv)
 #if __riscv_xlen == 64
 /* ------------------------------------
 RISC-V 64 relocations
 ------------------------------------ */
-   // TODO:
+   #error "Not implemented yet."
 #elif __riscv_xlen == 32
 /* ------------------------------------
 RISC-V 32 relocations
 ------------------------------------ */
-   // TODO:
+   #error "Not implemented yet."
 #endif // __riscv_xlen == 64
 #else
 #error "Architecture not supported."

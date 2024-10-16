@@ -46,11 +46,19 @@
    #endif
 #elif defined(__x86_64__)
    /* FIXME: Macros defined by LLVM CLang are considered here
-      the standard when compiling for x86 target. */
-   #define ELFCLASS      ELFCLASS64
-   #define ELFDATA       ELFDATA2LSB
-   #define EM_           EM_X86_64
+      the standard when compiling for AMD64 target. */
+   #if defined(__LP64__)
+      #define ELFCLASS      ELFCLASS64
+      typedef uint64_t wordclass;
+   #elif defined(__ILP32__)
+      #define ELFCLASS      ELFCLASS32
+      typedef uint32_t wordclass;
+   #endif
+   #define ELFDATA          ELFDATA2LSB
+   #define EM_              EM_X86_64
 #elif defined(__i386__)
+   /* FIXME: Macros defined by LLVM CLang are considered here
+      the standard when compiling for x86 target. */
    #define ELFCLASS      ELFCLASS32
    #define ELFDATA       ELFDATA2LSB
    #define EM_           EM_386
