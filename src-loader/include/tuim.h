@@ -15,18 +15,13 @@ extern char *tuim_error_filename;
 #define TUIM_ERROR_NOTDYN         0x0006U
 #define TUIM_ERROR_UNSUPPORTED_RT 0x0007U
 #define TUIM_ERROR_SYMBOLNOTFOUND 0x0008U
+#define TUIM_ERROR_BADMEMLAYOUT   0x0009U
 
 /* ---
 Typedefs
 --- */
 
-typedef struct tuim_elf {
-   void *ehdr;   /* Pointer to ELF header */
-   void *phdr;   /* Program header array */
-   void *shdr;   /* Section header array */
-   void **segments; /* Array of pointers to segments */
-   void **sections; /* Array of pointers to sections */
-} tuim_elf;
+typedef struct tuim_elf tuim_elf;
 
 /* ---
 Prototypes

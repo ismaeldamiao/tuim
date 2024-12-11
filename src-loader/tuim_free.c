@@ -29,17 +29,18 @@
 #include "include/tuim.h"
 #include "elf.h"
 
+#include "tuim_private.h"
 #include "tuim_utils.h"
 
 /* ------------------------------------
    Function to free the memory alocated by tuim_loader.
    * Part of tuim project.
-   * Last modified: Octubre 10, 2024.
+   * Last modified: December 7, 2024.
 ------------------------------------ */
 
 void tuim_free(tuim_elf *elf){
 
-   if(elf){
+   if(elf != NULL){
       Elf_Ehdr *ehdr;
       Elf_Shdr *phdr;
       Elf_Shdr *shdr;
@@ -50,13 +51,15 @@ void tuim_free(tuim_elf *elf){
 
       list_remove(&tuim_loaded, elf);
 
-      if(ehdr){
+      if(ehdr != NULL){
          uint16_t e_shnum, e_phnum;
 
          e_shnum = ELF_E_SHNUM(*ehdr);
-         e_phnum = ELF_E_PHNUM(*ehdr);
 
-         if(shdr){
+         if(phdr != NULL) free(elf->program);
+         free(elf->phdr);
+
+         if(shdr != NULL){
             // Free dependencies
             while(elf->sections[0]){
                tuim_elf *dep;
@@ -65,80 +68,21 @@ void tuim_free(tuim_elf *elf){
                tuim_free(dep);
             }
 
+            // Free section that do not appeas in program memory image
             for(uint16_t i = UINT16_C(1); i < e_shnum; ++i){
-               bool free_it;
                size_t sh_size;
                uint32_t sh_flags;
-               uintptr_t sh_addr;
 
-               free_it = true;
                sh_size = ELF_SH_SIZE(shdr[i]);
-               sh_addr = ELF_SH_OFFSET(shdr[i]);
                sh_flags = ELF_SH_FLAGS(shdr[i]);
 
-               if(sh_flags & SHF_ALLOC){
-                  for(uint16_t j = UINT16_C(0); j < e_phnum; ++j)
-                  if(ELF_P_TYPE(phdr[j]) == PT_LOAD){
-                     uintptr_t p_vaddr;
-                     size_t p_memsz;
-
-                     p_vaddr = ELF_P_VADDR(phdr[j]);
-                     p_memsz = (size_t)ELF_P_MEMSZ(phdr[j]);
-
-                     if(
-                        (sh_addr >= p_vaddr) &&
-                        ((sh_addr + sh_size) <= (p_vaddr + p_memsz))
-                     ){
-                        free_it = false;
-                        break;
-                     }
-                  }
-               }
-               if(free_it) free(elf->sections[i]);
+               if(!(sh_flags & SHF_ALLOC) && (sh_size != (size_t)0))
+                  free(elf->sections[i]);
             }
             free(elf->sections);
             free(shdr);
          }
 
-         if(phdr){
-            for(uint16_t i = UINT16_C(0); i < e_phnum; ++i){
-               bool free_it;
-               size_t p_memsz;
-               uint32_t p_type;
-               uintptr_t p_vaddr;
-
-               p_type = ELF_P_TYPE(phdr[i]);
-               if(p_type == PT_LOAD){
-                  free(elf->segments[i]);
-                  continue;
-               }
-
-               free_it = true;
-               p_vaddr = ELF_P_VADDR(phdr[i]);
-               p_memsz = (size_t)ELF_P_MEMSZ(phdr[i]);
-               elf->segments[i] = NULL;
-
-               for(uint16_t j = UINT16_C(0); j < e_phnum; ++j){
-                  uintptr_t pp_vaddr;
-                  size_t pp_memsz;
-
-                  if(ELF_P_TYPE(phdr[j]) != PT_LOAD) continue;
-
-                  pp_vaddr = ELF_P_VADDR(phdr[j]);
-                  pp_memsz = (size_t)ELF_P_MEMSZ(phdr[j]);
-                  if(
-                     (p_vaddr >= pp_vaddr) &&
-                     ((p_vaddr + p_memsz) <= (pp_vaddr + pp_memsz))
-                  ){
-                     free_it = false;
-                     break;
-                  }
-               }
-               if(free_it)free(elf->segments[i]);
-            }
-            free(elf->segments);
-            free(elf->phdr);
-         }
          free(elf->ehdr);
       }
       free(elf);

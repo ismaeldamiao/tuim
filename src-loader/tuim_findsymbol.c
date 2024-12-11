@@ -25,6 +25,7 @@
 
 #include "include/tuim.h"
 #include "elf.h"
+#include "tuim_private.h"
 #include "tuim_utils.h"
 
 /* ------------------------------------
@@ -36,14 +37,16 @@
 void* tuim_findsymbol(const char *symbol, const tuim_elf *elf){
    Elf_Ehdr *ehdr;
    Elf_Shdr *shdr;
-   uint16_t e_shnum;
+   unsigned int e_shnum;
+
+   if(elf == NULL) return NULL;
 
    ehdr = elf->ehdr;
    shdr = elf->shdr;
 
-   e_shnum = ELF_E_SHNUM(*ehdr);
+   e_shnum = (unsigned int)ELF_E_SHNUM(*ehdr);
 
-   for(uint16_t i = UINT16_C(0); i < e_shnum; ++i){
+   for(unsigned int i = 0U; i < e_shnum; ++i){
       uint32_t sh_type;
 
       sh_type = ELF_SH_TYPE(shdr[i]);
@@ -51,13 +54,14 @@ void* tuim_findsymbol(const char *symbol, const tuim_elf *elf){
       if(sh_type == SHT_SYMTAB){
          Elf_Sym *syms;
          uint8_t *str;
-         uint32_t sym_num;
+         unsigned int sym_num;
 
          syms = elf->sections[i];
          str = elf->sections[ELF_SH_LINK(shdr[i])];
-         sym_num = ELF_SH_SIZE(shdr[i]) / sizeof(Elf_Sym);
+         sym_num =
+         (unsigned int)ELF_SH_SIZE(shdr[i]) / (unsigned int)sizeof(Elf_Sym);
 
-         for(uint16_t j = UINT16_C(0); j < sym_num; ++j){
+         for(unsigned int j = 0U; j < sym_num; ++j){
 
             if(strcmp_(
                (uint8_t*)symbol,
@@ -70,8 +74,8 @@ void* tuim_findsymbol(const char *symbol, const tuim_elf *elf){
                else if(st_shndx == SHN_XINDEX)
                   return NULL; // FIXME: Find for it on SHT_SYMTAB_SHNDX
                return (
-                  section_base_addr(elf, st_shndx) +
-                  ELF_ST_VALUE(syms[j])
+                  (uint8_t*)(elf->program) +
+                  ELF_ST_VALUE(syms[j]) - elf->start_vaddr
                );
             }
          }

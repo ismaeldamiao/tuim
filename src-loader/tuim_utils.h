@@ -10,6 +10,7 @@
 
 #include "include/tuim.h"
 #include "elf.h"
+#include "tuim_private.h"
 
 /* ------------------------------------
    Determine processor
@@ -108,6 +109,7 @@
    #endif // defined(__GNUC__)
 #endif // !defined(ELFDATA)
 
+/*
 #define segment_base_addr(elf, phndx) (\
    (uint8_t*)((elf)->segments[phndx]) - \
    ELF_P_VADDR(((Elf_Phdr*)((elf)->phdr))[phndx])\
@@ -115,7 +117,7 @@
 #define section_base_addr(elf, shndx) (\
    (uint8_t*)((elf)->sections[shndx]) - \
    ELF_SH_ADDR(((Elf_Shdr*)((elf)->shdr))[shndx])\
-)
+)*/
 
 #define XOR(a, b) ((void*)((uintptr_t)(a) ^ (uintptr_t)(b)))
 

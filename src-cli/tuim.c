@@ -21,6 +21,7 @@
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
    IN THE SOFTWARE.
 ***************************************************************************** */
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <tuim.h>
@@ -30,6 +31,9 @@
    * Part of tuim project.
    * Last modified: Octubre 15, 2024.
 ------------------------------------ */
+
+//#define DBG(str, ...) fprintf(stdout, str, __VA_ARGS__)
+#define DBG(str, ...)
 
 int main(int argc, char **argv){
    tuim_elf *elf;
@@ -46,7 +50,9 @@ int main(int argc, char **argv){
    /* Jump to the entry point. */
    main_ = (int(*)(int,char**))tuim_getentry(elf);
    if(main_ == NULL) goto jump_error;
+   DBG("%s: Jumping to %p.\n", argv[0], main_);
    return_code = main_(--argc, ++argv);
+   DBG("%s: back to the control.\n", argv[-1]);
 
    /* Free the memory and return. */
    tuim_free(elf);

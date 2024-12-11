@@ -5,7 +5,7 @@
 TUIM_HOME="${PREFIX}/lib/tuim"
 
 [ ! -d ".build" ] || [ ! -r ".build/tuim" ] && {
-   bash scripts/build.sh || exit $?
+   sh scripts/build.sh || exit $?
 }
 
 [ ! -d "${TUIM_HOME}" ] && {

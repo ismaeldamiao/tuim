@@ -32,11 +32,12 @@
 #include "include/tuim.h"
 #include "elf.h"
 
+#include "tuim_private.h"
 #include "tuim_utils.h"
 /* ------------------------------------
    Function to load in memory an PIE (shared object, ELF file).
    * Part of tuim project.
-   * Last modified: Octubre 14, 2024.
+   * Last modified: December 7, 2024.
 ------------------------------------ */
 
 //#define DBG(str, ...) fprintf(stdout, str, __VA_ARGS__)
@@ -48,12 +49,85 @@
 #include "aligned_alloc.c"
 
 static bool haveslash(uint8_t *str){
-   /* Value of '/' in the ASCII chart is 0x2f */
+   const uint8_t ascii_slash = UINT8_C(0x2f);
    for(; *str; ++str)
-      if(*str == UINT8_C(0x2f)) return true;
+      if(*str == ascii_slash) return true;
    return false;
 }
 
+/* load_program:
+   - Compute the size of the program memory image using the diference
+     from the last virtual address byte and the first virtual address byte of
+     loadable segments.
+   - Allocate memory for the program memory image and copy the file image.
+   - Initialize elf->segments and elf->start_vaddr. */
+
+static void* load_program(
+   unsigned int e_phnum, Elf_Phdr *phdr, FILE *file_ptr, tuim_elf *elf
+){
+   void *program, *buf;
+   size_t prog_size, prog_alignment;
+   uintptr_t start_vaddr, end_vaddr;
+
+   /* Compute the program size */
+   prog_alignment = (size_t)0;
+   for(unsigned int i = 0U; i < e_phnum; ++i){
+      uintptr_t p_vaddr;
+      size_t p_memsz;
+
+      if(ELF_P_TYPE(phdr[i]) != PT_LOAD) continue;
+
+      p_vaddr = ELF_P_VADDR(phdr[i]);
+      p_memsz = (size_t)ELF_P_MEMSZ(phdr[i]);
+
+      if(prog_alignment == (size_t)0){
+         prog_alignment = (size_t)ELF_P_ALIGN(phdr[i]);
+         start_vaddr = p_vaddr;
+      }
+      end_vaddr = p_vaddr + (uintptr_t)p_memsz;
+   }
+
+   /* Allocate memory */
+   prog_size = (size_t)(end_vaddr - start_vaddr);
+   program = aligned_alloc(prog_alignment, prog_size);
+   tuim_mprotect(program, prog_size, (int)(PF_R | PF_W | PF_X));
+
+   /* Read loadable segments */
+   for(unsigned int i = 0U; i < e_phnum; ++i){
+      uintptr_t p_offset, p_vaddr;
+      size_t p_memsz, p_filesz;
+
+      p_vaddr = ELF_P_VADDR(phdr[i]);
+      elf->segments[i] = buf = (uint8_t*)program + p_vaddr - start_vaddr;
+
+      if(ELF_P_TYPE(phdr[i]) != PT_LOAD) continue;
+
+      p_memsz = (size_t)ELF_P_MEMSZ(phdr[i]);
+      p_filesz = (size_t)ELF_P_FILESZ(phdr[i]);
+      p_offset = ELF_P_OFFSET(phdr[i]);
+
+      if(fseek(file_ptr, (long)p_offset, SEEK_SET) != 0){
+         free(program);
+         tuim_error = TUIM_ERROR_READING;
+         return NULL;
+      }
+
+      if(fread(buf, sizeof(uint8_t), p_filesz, file_ptr) != p_filesz){
+         free(program);
+         tuim_error = TUIM_ERROR_READING;
+         return NULL;
+      }
+
+      if(p_memsz > p_filesz)
+         memset((uint8_t*)buf + p_filesz, 0, p_memsz - p_filesz);
+   }
+   elf->start_vaddr = start_vaddr;
+   return program;
+}
+
+/* Load:
+   - Allocate size bytes of memory and copy size bytes at the offset
+     from file pointed by file_ptr. */
 static void* load(uintptr_t offset, size_t size, FILE *file_ptr){
    void* data;
 
@@ -75,35 +149,6 @@ static void* load(uintptr_t offset, size_t size, FILE *file_ptr){
    }
 
    return data;
-}
-
-static void* load_segment(
-   uintptr_t p_offset, size_t p_align, size_t p_filesz, size_t p_memsz, FILE *file_ptr
-){
-   void* segment;
-
-   segment = aligned_alloc(p_align, p_memsz);
-   if(segment == NULL){
-      tuim_error = TUIM_ERROR_MEMORY;
-      return NULL;
-   }
-
-   if(fseek(file_ptr, (long)p_offset, SEEK_SET) != 0){
-      free(segment);
-      tuim_error = TUIM_ERROR_READING;
-      return NULL;
-   }
-   
-   if(fread(segment, sizeof(uint8_t), p_filesz, file_ptr) != p_filesz){
-      free(segment);
-      tuim_error = TUIM_ERROR_READING;
-      return NULL;
-   }
-
-   if(p_memsz > p_filesz)
-      memset((uint8_t*)segment + p_filesz, 0, p_memsz - p_filesz);
-
-   return segment;
 }
 
 tuim_elf* tuim_loader(const char *file_path){
@@ -139,16 +184,6 @@ tuim_elf* tuim_loader(const char *file_path){
    elf->ehdr = ehdr;
    elf->phdr = phdr;
    elf->shdr = shdr;
-   {
-      elf_list *node;
-      node = list_add(&tuim_loaded, file_path, elf);
-      if(node == NULL){
-         free(elf);
-         elf = NULL;
-         tuim_error = TUIM_ERROR_MEMORY;
-         goto error;
-      }
-   }
 
    DBG("%s: loading the ELF header.\n", file_path);
 
@@ -198,7 +233,7 @@ tuim_elf* tuim_loader(const char *file_path){
    if(status != (sizeof(Elf_Ehdr) - EI_NIDENT)){
       tuim_error = TUIM_ERROR_READING;
       goto error;
-   }else if(ELF_E_TYPE(*ehdr) != ET_DYN){
+   }else if((ELF_E_TYPE(*ehdr) != ET_DYN) && (ELF_E_TYPE(*ehdr) != ET_EXEC)){
       tuim_error = TUIM_ERROR_NOTDYN;
       goto error;
    }else if(ELF_E_MACHINE(*ehdr) != EM_){
@@ -208,8 +243,6 @@ tuim_elf* tuim_loader(const char *file_path){
       tuim_error = TUIM_ERROR_INVALIDELF;
       goto error;
    }
-
-   DBG("%s: loading the program header table.\n", file_path);
 
    /* Parse the Program Header table and load the segments. */
    {
@@ -229,6 +262,7 @@ tuim_elf* tuim_loader(const char *file_path){
          }
 
          /* Parse the program header table. */
+         DBG("%s: loading the program header table.\n", file_path);
          elf->phdr = phdr = load(
             e_phoff, sizeof(Elf_Phdr) * (size_t)(e_phnum), file_ptr
          );
@@ -245,80 +279,14 @@ tuim_elf* tuim_loader(const char *file_path){
 
          /* Load PT_LOAD segments:
             Find for loadable segments and load it. */
-         for(uint16_t i = UINT16_C(0); i < e_phnum; ++i){
-            size_t p_memsz, p_filesz, p_align;
-            uintptr_t p_offset;
-            
-            if(ELF_P_TYPE(phdr[i]) != PT_LOAD) continue;
-            
-            p_memsz = (size_t)ELF_P_MEMSZ(phdr[i]);
-            if(p_memsz == (size_t)0) continue;
-
-            p_align = (size_t)ELF_P_ALIGN(phdr[i]);
-            p_filesz = (size_t)ELF_P_FILESZ(phdr[i]);
-            p_offset = ELF_P_OFFSET(phdr[i]);
-
-            elf->segments[i] = load_segment(
-               p_offset, p_align, p_filesz, p_memsz, file_ptr
-            );
-            if(elf->segments[i] == NULL){
-               tuim_error = TUIM_ERROR_READING;
-               goto error;
-            }
-         }
-
-         /* Check for embedded segments:
-            Check if any other segments start and end within the boundaries
-            of a PT_LOAD segment. If they do, simply point to the address
-            where they are, without loading them again. If they don't, 
-            load it. */
-         for(uint16_t i = UINT16_C(0); i < e_phnum; ++i){
-            size_t p_memsz;
-            uint32_t p_type;
-            uintptr_t p_vaddr;
-
-            p_type = ELF_P_TYPE(phdr[i]);
-            if(p_type == PT_LOAD) continue;
-
-            p_vaddr = ELF_P_VADDR(phdr[i]);
-            p_memsz = (size_t)ELF_P_MEMSZ(phdr[i]);
-            elf->segments[i] = NULL;
-
-            for(uint16_t j = UINT16_C(0); j < e_phnum; ++j){
-               uintptr_t pp_vaddr;
-               size_t pp_memsz;
-
-               if(ELF_P_TYPE(phdr[j]) != PT_LOAD) continue;
-
-               pp_vaddr = ELF_P_VADDR(phdr[j]);
-               pp_memsz = (size_t)ELF_P_MEMSZ(phdr[j]);
-               if(
-                  (p_vaddr >= pp_vaddr) &&
-                  ((p_vaddr + p_memsz) <= (pp_vaddr + pp_memsz))
-               ){
-                  elf->segments[i] =
-                  (uint8_t*)(elf->segments[j]) - pp_vaddr + p_vaddr;
-                  break;
-               }
-            }
-            if(elf->segments[i] == NULL){
-               uintptr_t p_offset;
-               size_t p_align, p_filesz;
-
-               p_align = ELF_P_ALIGN(phdr[i]);
-               p_filesz = ELF_P_FILESZ(phdr[i]);
-               p_offset = ELF_P_OFFSET(phdr[i]);
-
-               elf->segments[i] = load_segment(
-                  p_offset, p_align, p_filesz, p_memsz, file_ptr
-               );
-               if(elf->segments[i] == NULL)
-                  goto error;
-            }
-            if(p_type == PT_DYNAMIC){
-               dyn = elf->segments[i];
-               dyn_num = p_memsz / sizeof(Elf_Dyn);
-            }
+         DBG("%s: loading the program memory image at ", file_path);
+         elf->program = load_program(e_phnum, phdr, file_ptr, elf);
+         DBG("%p.\n", elf->program);
+         if(elf->program == NULL){
+            tuim_error = TUIM_ERROR_MEMORY;
+            free(phdr);
+            elf->phdr = NULL;
+            goto error;
          }
       }
    }
@@ -362,7 +330,6 @@ tuim_elf* tuim_loader(const char *file_path){
             size_t sh_size;
             uint16_t e_phnum;
             uint32_t sh_flags;
-            uintptr_t sh_addr;
 
             sh_size = (size_t)ELF_SH_SIZE(shdr[i]);
             elf->sections[i] = NULL;
@@ -370,48 +337,36 @@ tuim_elf* tuim_loader(const char *file_path){
             if(sh_size == (size_t)0) continue;
 
             e_phnum = ELF_E_PHNUM(*ehdr);
-            sh_addr = ELF_SH_ADDR(shdr[i]);
             sh_flags = ELF_SH_FLAGS(shdr[i]);
 
-            /* Try to map the section data from segments */
             if(sh_flags & SHF_ALLOC){
-               for(uint16_t j = UINT16_C(0); j < e_phnum; ++j)
-               if(ELF_P_TYPE(phdr[j]) == PT_LOAD){
-                  uintptr_t p_vaddr;
-                  size_t p_memsz;
-
-                  p_vaddr = ELF_P_VADDR(phdr[j]);
-                  p_memsz = (size_t)ELF_P_MEMSZ(phdr[j]);
-
-                  if(
-                     (sh_addr >= p_vaddr) &&
-                     ((sh_addr + sh_size) <= (p_vaddr + p_memsz))
-                  ){
-                     elf->sections[i] =
-                     (uint8_t*)(elf->segments[j]) - p_vaddr + sh_addr;
-                     break;
-                  }
-               }
-            }
-
-            /* Otherwise copy it from the file. */
-            if(elf->sections[i] != NULL) continue;
-
-            if(ELF_SH_TYPE(shdr[i]) == SHT_NOBITS){
-               elf->sections[i] = malloc(sh_size);
-               if(elf->sections[i] == NULL){
-                  tuim_error = TUIM_ERROR_MEMORY;
-                  goto error;
-               }
+               /* Map section data from segments. */
+               uintptr_t sh_addr;
+               sh_addr = ELF_SH_ADDR(shdr[i]);
+               elf->sections[i] =
+               (uint8_t*)(elf->program) + sh_addr - elf->start_vaddr;
             }else{
-               uintptr_t sh_offset;
-               sh_offset = ELF_SH_OFFSET(shdr[i]);
+               /* Otherwise copy it from the file. */
+               if(ELF_SH_TYPE(shdr[i]) == SHT_NOBITS){
+                  elf->sections[i] = malloc(sh_size);
+                  if(elf->sections[i] == NULL){
+                     tuim_error = TUIM_ERROR_MEMORY;
+                     goto error;
+                  }
+               }else{
+                  uintptr_t sh_offset;
+                  sh_offset = ELF_SH_OFFSET(shdr[i]);
 
-               elf->sections[i] = load(
-                  sh_offset, sh_size, file_ptr
+                  elf->sections[i] = load(
+                     sh_offset, sh_size, file_ptr
+                  );
+                  if(elf->sections[i] == NULL)
+                     goto error;
+               }
+               DBG(
+                  "%s:   section %02d loaded at %p.\n",
+                  file_path, i, elf->sections[i]
                );
-               if(elf->sections[i] == NULL)
-                  goto error;
             }
          }
       }
@@ -419,23 +374,41 @@ tuim_elf* tuim_loader(const char *file_path){
 
    fclose(file_ptr);
 
+   DBG("%s: dynamic linking...\n", file_path);
+
+   /* Find for the PT_DYNAMIC segment */
+   {
+      unsigned int e_phnum;
+      e_phnum = (unsigned int)ELF_E_PHNUM(*ehdr);
+      for(unsigned int i = 0U; i < e_phnum; ++i){
+         uint32_t p_type;
+
+         p_type = ELF_P_TYPE(phdr[i]);
+         if(p_type == PT_LOAD) continue;
+
+         if(p_type == PT_DYNAMIC){
+            size_t p_memsz;
+            dyn = elf->segments[i];
+            p_memsz = (size_t)ELF_P_MEMSZ(phdr[i]);
+            dyn_num = p_memsz / sizeof(Elf_Dyn);
+         }
+      }
+   }
+
    /* --------------------------------------------------------------------------
    Load dependencies
    -------------------------------------------------------------------------- */
-   if(dyn){
+
+   if(dyn != NULL){
       size_t d_tag;
       uint8_t *strtab;
-
-      DBG("%s: loading dependencies.\n", file_path);
 
       // Find for the string table
       for(uint16_t i = UINT16_C(0); i < dyn_num; ++i)
          if((d_tag = ELF_D_TAG(dyn[i]), (d_tag == DT_STRTAB))){
-            uint16_t j;
             uintptr_t d_ptr;
             d_ptr = ELF_D_UN(dyn[i]);
-            j = phndx(elf, d_ptr);
-            strtab = (uint8_t*)(elf->segments[j]) + d_ptr;
+            strtab = (uint8_t*)(elf->program) + d_ptr - elf->start_vaddr;
             break;
          }
 
@@ -498,16 +471,18 @@ tuim_elf* tuim_loader(const char *file_path){
          size_t relnum;
          uint8_t *rel_base_addrs, *strtab;
          uint16_t rel_shndx;
-         uint32_t sh_info, sh_link;
+         uint32_t sh_info, sh_link, sh_type;
          uintptr_t d_ptr;
          Elf_Sym *symtab;
 
          d_tag = ELF_D_TAG(dyn[i]);
-         if((d_tag != DT_REL) && (d_tag != DT_RELA)) continue;
+         if((d_tag != DT_REL) && (d_tag != DT_RELA) && (d_tag != DT_JMPREL))
+            continue;
 
          // The relocation table
          d_ptr = ELF_D_UN(dyn[i]); // reltab virtual address
          rel_shndx = shndx(elf, d_ptr); // reltab section index
+         sh_type = ELF_SH_TYPE(shdr[rel_shndx]);
          reltab = elf->sections[rel_shndx];
 
          // The associated symbol table
@@ -520,12 +495,8 @@ tuim_elf* tuim_loader(const char *file_path){
 
          // The section to which relocation applies
          sh_info = ELF_SH_INFO(shdr[rel_shndx]);
-         rel_base_addrs = ( (sh_info != UINT32_C(0)) ?
-            section_base_addr(elf, sh_info) :
-            section_base_addr(elf, rel_shndx)
-         );
 
-         relnum = (size_t)ELF_SH_SIZE(shdr[rel_shndx]) / ((d_tag == DT_REL) ?
+         relnum = (size_t)ELF_SH_SIZE(shdr[rel_shndx]) / ((sh_type == SHT_REL) ?
             sizeof(Elf_Rel) : sizeof(Elf_Rela)
          );
 
@@ -533,9 +504,9 @@ tuim_elf* tuim_loader(const char *file_path){
          for(size_t j = UINT32_C(0); j < relnum; ++j){
             void *rel;
             uint32_t r_type, r_sym;
-            intptr_t r_offset;
+            uintptr_t r_offset;
 
-            if(d_tag == DT_REL)
+            if(sh_type == SHT_REL)
                rel = (*(((Elf_Rel*)reltab) + j));
             else
                rel = (*(((Elf_Rela*)reltab) + j));
@@ -570,7 +541,8 @@ AARCH32 relocations
    if(r_type == R_ARM_ABS32) r_type = R_ARM_GLOB_DAT;
 
    // Address of the symbol reference (place)
-   P = (uint32_t)(segment_base_addr(elf, phndx(elf, r_offset)) + r_offset);
+   //P = (uint32_t)(segment_base_addr(elf, phndx(elf, r_offset)) + r_offset);
+   P = (uint32_t)(elf->program) + r_offset - elf->start_vaddr;
 
    /* From _ELF for the Arm Architecture_:
       > If the place is subject to a data-type relocation,
@@ -578,19 +550,19 @@ AARCH32 relocations
       > bits.
    */
    // The addend
-   A = ((d_tag == DT_REL) ? *((int32_t*)P) : ELF_R_ADDEND(*(Elf_Rela*)rel));
+   A = ((sh_type == SHT_REL) ? *((int32_t*)P) : ELF_R_ADDEND(*(Elf_Rela*)rel));
 
    // Base address of the symbol definition
    if(r_sym != UINT32_C(0)){
       sym = symtab + r_sym;
       st_shndx = ELF_ST_SHNDX(*sym);
       if(st_shndx != STN_UNDEF){
-         B = (uint32_t)section_base_addr(elf, st_shndx);
+         B = (uint32_t)(elf->program) - elf->start_vaddr;
       }else{
          uint32_t st_name;
          tuim_elf *dep = NULL;
 
-         // The symbol is not defined in this files, find it on dependencies.
+         // The symbol is not defined in this file, find it on dependencies.
          st_name = ELF_ST_NAME(*sym);
          findsymbol(&dep, &sym, strtab + st_name, elf->sections[0]);
 
@@ -599,19 +571,19 @@ AARCH32 relocations
          }
 
          st_shndx = ELF_ST_SHNDX(*sym);
-         B = (uint32_t)section_base_addr(dep, st_shndx);
+         B = (uint32_t)(dep->program) - dep->start_vaddr;
       }
-   }else{
-      B = (uint32_t)rel_base_addrs; // ??
    }
 
    // Relocation types that do not need symbol value
    if(r_type == R_ARM_RELATIVE){
       /* RELATIVE relocations with undefined symbols use the addend
          as the address of symbols definition. */
-      if(r_sym == UINT32_C(0))
-         B = (uint32_t)segment_base_addr(elf, phndx(elf, A));
       *((uint32_t*)P) = B + A;
+      DBG(
+         "%s:   adress 0x%08x now holds 0x%08x.\n",
+         file_path, P, *((uint32_t*)P)
+      );
       continue;
    }
 
@@ -632,24 +604,32 @@ AARCH32 relocations
       *((uint32_t*)P) = S + A /* - tp */;
    }else if(r_type == R_ARM_GLOB_DAT){
       uint32_t T;
-      if((ELF_ST_TYPE(*sym) == STT_FUNC) && (S & UINT32_C(0x00000001)))
-         T = UINT32_C(0x00000001);
+      if(ELF_ST_TYPE(*sym) == STT_FUNC)
+         T = S & UINT32_C(0x00000001);
       else
          T = UINT32_C(0x00000000);
 
       *((uint32_t*)P) = (S + A) | T;
+      DBG(
+         "%s:   adress 0x%08x now holds 0x%08x.\n",
+         file_path, P, *((uint32_t*)P)
+      );
    }else if(r_type == R_ARM_JUMP_SLOT){
       uint32_t T;
-      if((ELF_ST_TYPE(*sym) == STT_FUNC) && (S & UINT32_C(0x00000001)))
-         T = UINT32_C(0x00000001);
+      if(sh_type == SHT_REL) A = INT32_C(0);
+      if(ELF_ST_TYPE(*sym) == STT_FUNC)
+         T = S & UINT32_C(0x00000001);
       else
          T = UINT32_C(0x00000000);
-
       *((uint32_t*)P) = (S + A) | T;
    }else{
       tuim_error = TUIM_ERROR_UNSUPPORTED_RT;
       goto error;
    }
+   DBG(
+      "%s:   adress 0x%08x now holds 0x%08x.\n",
+      file_path, P, *((uint32_t*)P)
+   );
 #endif // __ARM_ARCH >= 8
 #elif defined(__x86_64__)
 /* ------------------------------------
@@ -762,10 +742,11 @@ RISC-V 32 relocations
 
       e_phnum = ELF_E_PHNUM(*ehdr);
 
-      for(uint16_t i = UINT16_C(0); i < e_phnum; ++i)
-      if(ELF_P_TYPE(phdr[i]) == PT_LOAD){
+      for(uint16_t i = UINT16_C(0); i < e_phnum; ++i){
          size_t p_memsz;
          uint32_t p_flags;
+
+         if(ELF_P_TYPE(phdr[i]) != PT_LOAD) continue;
 
          p_flags = ELF_P_FLAGS(phdr[i]);
          p_memsz = (size_t)ELF_P_MEMSZ(phdr[i]);

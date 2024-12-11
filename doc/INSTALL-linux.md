@@ -1,7 +1,7 @@
-# Tuim setup in Termux
+# Tuim setup in Linux
 
 This is the step by step tutorial to setup the a complete
-Tuim command line environment in [Termux](https://termux.dev/en/).
+Tuim command line environment in Unix like systems.
 
 ## Get started
 
