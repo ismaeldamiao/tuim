@@ -1,0 +1,462 @@
+%   Copyright (c) 2024 I.F.F. dos SANTOS <ismaellxd@gmail.com>
+
+%   Permission is hereby granted, free of charge, to any person obtaining a copy 
+%   of this software and associated documentation files (the “Software”), to 
+%   deal in the Software without restriction, including without limitation the 
+%   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
+%   sell copies of the Software, and to permit persons to whom the Software is 
+%   furnished to do so, subject to the following conditions:
+
+%   The above copyright notice and this permission notice shall be included in 
+%   all copies or substantial portions of the Software.
+
+%   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+%   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+%   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+%   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+%   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+%   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+%   IN THE SOFTWARE.
+
+\documentclass[
+   % -- opções da classe memoir --
+   article,                      % indica que é um artigo acadêmico
+   10pt,                         % tamanho da fonte.
+   openright,                    % capítulos começam em pág ímpar (insere página vazia caso preciso).
+   oneside,                      % para impressão em recto. Oposto a toweside.
+   a4paper,                      % tamanho do papel. 
+   sumario = tradicional,        % Para indentar os sumários
+   % -- opções do pacote babel --
+   english,                      % idioma adicional para hifenização.
+   xcolor=table                  % Tabelas coloridadas.
+]{abntex2}
+% --------------------------------------
+% PACOTES
+% --------------------------------------
+\input{configurar_abntex.tex}
+\input{configurar_fontes.tex}
+\input{configurar_documento.tex}
+\input{configurar_code.tex}
+\input{configurar_hyper.tex}
+\input{configurar_utilidades.tex}
+
+
+% --------------------------------------
+% Informações de dados para CAPA e FOLHA DE ROSTO
+% --------------------------------------
+% Nesta parte ainda não são permitidos acentos, segue um dicionário
+% cedilha ç = \c{c}, Ç = \c{C}
+% agudo á = \'{a}, Á = \'{A}
+% agudo é = \'{e}, É = \'{E}
+% agudo í = \'{i}, Í = \'{I}
+% agudo ó = \'{o}, Ó = \'{O}
+% agudo ú = \'{u}, Ú = \'{U}
+\titulo{%
+   Tuim Developer Kit \\ \small{Version 0}%
+}
+\autor{
+   I. F. F. dos{ }SANTOS\thanks{\href{mailto:ismaellxd@gmail.com}{ismaellxd@gmail.com}}
+}
+\local{Maceió}
+
+% informações do PDF
+\hypersetup{
+   english,
+   pdftitle={\imprimirtitulo}, 
+   pdfauthor={\imprimirautor},
+   pdfcreator={LaTeX with abnTeX2},
+   pdfkeywords={PVI, EDO, C99},
+   %pagebackref=true,
+   bookmarksdepth=4,
+   colorlinks=true,            % false: boxed links; true: colored links
+   linkcolor=blue,             % color of internal links
+   citecolor=blue,             % color of links to bibliography
+   filecolor=mageta,          % color of file links
+   urlcolor=blue
+}
+\makeindex
+
+\begin{document}
+\selectlanguage{english}
+% ------------------------------------------------------------------------------
+% ELEMENTOS PRÉ-TEXTUAIS
+% ------------------------------------------------------------------------------
+\maketitle
+
+\begin{resumoumacoluna}
+   This document describes command line tools and standard libraries
+   to build application for Tuim\cite{tuim} environments.
+   The interface is designed to be cross-platform and
+   to allow cross-compilation and interoperability betewen distinct
+   languages.
+   Generated code is designed to mach the System V ABI\cite{systemv},
+   to generate position independent code and to allow binary portability,
+   even betewen distincts operational systems.
+
+   This document is in active development.
+   Its CLI and ABI might change any time without any notice.
+\end{resumoumacoluna}
+
+\newpage
+\tableofcontents
+\newpage
+% ------------------------------------------------------------------------------
+% ELEMENTOS TEXTUAIS
+% ------------------------------------------------------------------------------
+\textual
+
+% -------------------------------------
+% Introduction
+% -------------------------------------
+\section{Introduction}
+
+Various kind of code can be managed using the TDK:
+
+\begin{itemize}
+\item \textbf{Object code:}
+   The basic type of code is the object code.
+   For the purposes of TDK it can be in three forms
+   as relocatable object code, shared object or executable
+   as describeded by the ELF file format\cite{systemv}.
+   In all cases TDK is designed to work only with position independent code,
+   meaning that the code can be loaded at
+   relatively arbitrary address in memory.
+\item \textbf{Machine code:}
+   Object code contains machine code and others informations,
+   but, out of object code, machine code are usually written in a 
+   human readable form, TDK is designed to assemble such kind of code
+   to object code.
+\item \textbf{Source code:}
+   A relatively easy way to writte softwares is using a programing language,
+   TDK is designed to compile source code written in such language to
+   object code.
+\end{itemize}
+
+Executables are the final desired code in most projects,
+these files need to be loaded in memory before execution,
+sometimes executable also need to be dynamically linked with shared objects
+containing a library of code neccessary for execution.
+Relocatable objects are the result from the compile or assemble step and
+need to linked together in order to get the executable or shared object.
+
+\subsection{Target}
+
+Target environment usualy define the instruction set architecture
+(ISA), the endianness
+--- for processor with more than one endianness vailable in the market ---
+and file format
+--- for processors that support both 32bit and 64bit ELF specification ---.
+
+Programs build for one target can be successfully loaded on environments wrose
+processor mach the requirements,
+also can be successfully initialized if the required libraries are present.
+
+\newpage
+% -------------------------------------
+% Linker
+% -------------------------------------
+\section{Linker}
+
+\noindent NAME
+
+\begin{lstlisting}[style=bash]
+ld - The Tuim linker
+\end{lstlisting}
+
+\noindent SYNOPSIS
+
+\begin{lstlisting}[style=bash]
+ld [OPTIONS] objfile ...
+\end{lstlisting}
+
+\noindent DESCRIPTION
+
+The linker is a sofware to link relocatable objects,
+it outputs executables or a shared objects.
+
+\noindent OPTIONS
+
+\begin{description}[style=multiline,leftmargin=5cm]
+   \item[\texttt{{-}{-}version}]
+   Show the TDK versions, the default target and exit.
+   \item[\texttt{{-}{-}shared}]
+   Enable generation of shared object,
+   if not present defaults to generation of executable.
+   \item[\texttt{-e <symbol>}]
+   Define the \texttt{<symbol>} as the entry point
+   (suitable only for executables),
+   if not present defaults to \texttt{main}.
+   \item[\texttt{-o <name>}]
+   Define the output file's name,
+   if not present defaults to the same input name but with
+   extension changed to \texttt{elf} (for executables)
+   or \texttt{so} (for shared objects).
+   \item[\texttt{-l<library>}]
+   Add a \texttt{DT\_NEEDED} entry on the dynamic table for the
+   \texttt{lib<library>.so} dependency.
+\end{description}
+
+\newpage
+% -------------------------------------
+% Assembler
+% -------------------------------------
+\section{Assembler}
+
+\noindent NAME
+
+\begin{lstlisting}[style=bash]
+as - The Tuim assembler
+\end{lstlisting}
+
+\noindent SYNOPSIS
+
+\begin{lstlisting}[style=bash]
+as [OPTIONS] asmfile ...
+\end{lstlisting}
+
+\noindent DESCRIPTION
+
+The assembler is a software to assemble human readable machine code,
+it outputs relocatable files.
+
+\noindent OPTIONS
+
+\begin{description}[style=multiline,leftmargin=5cm]
+   \item[\texttt{{-}{-}version}]
+   Show the TDK version and the default target and exit.
+   \item[\texttt{-o <name>}]
+   Define the output file's name,
+   if not present defaults to the same input name but with
+   extension changed to \texttt{o}.
+   \item[\texttt{{-}{-}target <target>}]
+   Specify the ISA.
+\end{description}
+
+\newpage
+% -------------------------------------
+% C Compiler
+% -------------------------------------
+\section{C Compiler}
+
+\noindent NAME
+
+\begin{lstlisting}[style=bash]
+cc - The Tuim C compiler
+\end{lstlisting}
+
+\noindent SYNOPSIS
+
+\begin{lstlisting}[style=bash]
+cc [OPTIONS] srcfile ...
+\end{lstlisting}
+
+\noindent DESCRIPTION
+
+The C compiler is a software to compile source code writter in the
+C Programing Language,
+it outputs relocatable files.
+
+\noindent OPTIONS
+
+\begin{description}[style=multiline,leftmargin=5cm]
+   \item[\texttt{{-}{-}version}]
+   Show the TDK version and the default target and exit.
+   \item[\texttt{-o <name>}]
+   Define the output file's name,
+   if not present defaults to the same input name but with
+   extension changed to \texttt{o}(for relocatable objects).
+   \item[\texttt{-I <path>}]
+   Define the \texttt{<path>} for find header files.
+   \item[\texttt{{-}{-}target <target>}]
+   Define the target processor.
+\end{description}
+
+\subsection{Libraries}
+\label{sec:cc:library}
+
+About the libraries supposed to be present at runtime,
+the C compiler is allowed to expect that the C Standard Library and
+the Compiler Runtime Library are available.
+In order to correctly link with these libraries one can use the
+\texttt{-lc} and \texttt{-lcrt} linker flags,
+then the linker find on predefined places for
+\texttt{libc.so} and \texttt{libcrt.so} object files.
+The \texttt{libc.so} shared object
+expose symbols from the C Standard Library, the latest version\cite{ISO9899}.
+The \texttt{libcrt.so} shared object
+expose symbols from the Compiler Runtime Library,
+usually helper functions that the compiler need to implement
+the C Programing Language itself.
+None of these libraries expose%
+\footnote{A symbol is \tetit{exposed}
+if the symbol binding is other than \texttt{STB\_LOCAL}} any non standard symbol
+except symbols reserved for the implementation, namely that begins with
+two underscores or an underscore followed by a capital letter.
+
+\newpage
+% -------------------------------------
+% Build system
+% -------------------------------------
+\section{Build system}
+
+\noindent NAME
+
+\begin{lstlisting}[style=bash]
+mk - The Tuim utility to build projects
+\end{lstlisting}
+
+\noindent SYNOPSIS
+
+\begin{lstlisting}[style=bash]
+mk [OPTIONS] yamlfile ...
+\end{lstlisting}
+
+\noindent DESCRIPTION
+
+The build system is a software to automate some processes when building
+executables and shared objects from multiple source files.
+
+\noindent OPTIONS
+
+\begin{description}[style=multiline,leftmargin=5cm]
+   \item[\texttt{{-}{-}version}]
+   Show the TDK version and the default target and exit.
+   \item[\texttt{{-}{-}target <target>}]
+   Define the target processor.
+\end{description}
+
+\subsection{Configuration file}
+
+Configuration files are used to describe how source code are assembled,
+compiled and linked to generate a executable or shared object.
+The configuration file entries are:
+
+\begin{description}[style=multiline,leftmargin=5cm]
+   \item[\texttt{name}]
+   The name of the output.
+   Output name is exact the value in this field for executables,
+   but for shared objects the output name is \texttt{lib<value>.so}.
+   \item[\texttt{object\_type}]
+   The type of object file to generate.
+   Allowed values: \texttt{executable}, \texttt{shared}.
+   \item[\texttt{dependencies}]
+   List of dependency libraries for the dynamic table.
+   \item[\texttt{source}]
+   List of sources (see bellow).
+\end{description}
+
+Source code files are describeded by the list \texttt{source}:
+
+\begin{description}[style=multiline,leftmargin=5cm]
+   \item[\texttt{language}]
+   The programing language the source entry.
+   If not present then the source code are assembled.
+   Allowed value: \texttt{C}.
+   \item[\texttt{target}]
+   If present then define the target that the source entry is for,
+   if target command line option do not mach this value than
+   the entry is ignored.
+   For supported values see the appendex \ref{apendice:target}.
+   \item[\texttt{files}]
+   A list of source code files to be compiled/assembled,
+   file names are relative to the configuration file location.
+\end{description}
+
+
+\subsection{Example}
+
+Consider the following project.
+
+\begin{lstlisting}
+project
+`-- src
+    |-- boo.asm
+    |-- foo.c
+    `-- project.yaml
+\end{lstlisting}
+
+Where the contents of \texttt{project.yaml} is
+
+\begin{lstlisting}[style=yaml]
+name: foo
+type: shared
+dependencies:
+  - libc.so
+  - libcrt.so
+source:
+  - language: C
+    files:
+      - foo.c
+  - target: arm
+    files:
+      - boo.asm
+\end{lstlisting}
+
+\noindent
+Therefore the command to build it is
+
+\begin{lstlisting}[style=bash]
+mk src/project.yaml
+\end{lstlisting}
+
+\noindent
+And the result is like if executing the commands
+
+\begin{lstlisting}[style=bash]
+# On ARM machine
+cc -o tmp/foo.o src/foo.c
+as -o tmp/boo.o src/boo.asm
+ld -o lib/foo.so -lc -lcrt tmp/foo.o tmp/boo.o
+# On non ARM machine
+cc -o tmp/foo.o src/foo.c
+ld -o lib/foo.so -lc -lcrt tmp/foo.o
+\end{lstlisting}
+
+
+% ------------------------------------------------------------------------------
+% ELEMENTOS PÓS-TEXTUAIS
+% ------------------------------------------------------------------------------
+   \postextual
+   % ---------------------------------------------------------------------------
+   % Referências bibliográficas
+   % ---------------------------------------------------------------------------
+   \bibliography{references}
+   \apendices
+   \renewcommand{\thesection}{\Alph{section}}
+
+
+\section{The Compiler Runtime Library}
+
+Some processor suplements provide a specification for the
+Compiler Runtime Library, in that case this is the library in the shared
+object \texttt{libcrt.so}.
+If the processor suplement do not provide such specification than
+is a undefined bahavior the explicit use of
+any symbol exposed by \texttt{libcrt.so} in source code,
+these symbols are reserved for the use of the compiler.
+
+TODO: Alternatively, I want to provide a CLang compatible ABI for processors
+without such specification.
+
+\section{Others libraries}
+
+TODO: In this section I want to describe the ABI for dependency
+libraries others than
+the language standard library or the compiler runtime library.
+Libraries to control, for example, graphical and sound devices.
+I also want libraries for scientific purposes like BLAS.
+
+\section{Targets}
+\label{apendice:target}
+
+Allowed targets are
+\begin{itemize}
+   \item \texttt{x86}
+   \item \texttt{x86\_64}
+   \item \texttt{arm}
+   \item \texttt{aarch64}
+   \item \texttt{riscv32}
+   \item \texttt{riscv64}
+\end{itemize}
+
+\end{document}

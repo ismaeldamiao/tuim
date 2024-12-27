@@ -1,0 +1,111 @@
+%  Encoding: UTF-8
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %
+%  Copyright (C) 2023 I. F. F. dos SANTOS
+%
+%  Permission is hereby granted, free of charge, to any person obtaining a copy 
+%  of this software and associated documentation files (the “Software”), to 
+%  deal in the Software without restriction, including without limitation the 
+%  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+%  sell copies of the Software, and to permit persons to whom the Software is 
+%  furnished to do so, subject to the following conditions:
+%
+%  The above copyright notice and this permission notice shall be included in 
+%  all copies or substantial portions of the Software.
+%
+%  THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+%  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+%  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+%  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+%  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+%  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+%  IN THE SOFTWARE.
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %
+
+\usepackage{markdown}
+
+\makeatletter
+\newcommand{\customurl}[2]{
+   \ifthenelse{\equal{#1}{#2}}%
+   {\url{#1}}%
+   {\href{#1}{#2}}%
+}
+\makeatother
+
+\makeatletter
+\markdownSetup{
+   smartEllipses,
+   citations=true,
+   inlineFootnotes,
+   headerAttributes,
+   pipeTables,
+   tableCaptions,
+   underscores=false,
+   hybrid=false,
+   fencedCode=true,
+   blankBeforeCodeFence=true,
+   fencedCodeAttributes=false,
+   renderers = {
+      link = {\customurl{#2}{#1}},
+   },
+   rendererPrototypes = {
+      blockQuoteBegin = {\begin{citacao}},
+      blockQuoteEnd   = {\end{citacao}},
+      ulBegin         = {\begin{itemize}[nosep]},
+      ulEnd           = {\end{itemize}},
+      olBegin         = {\begin{enumerate}[nosep]},
+      olEnd           = {\end{enumerate}},
+      image           = {
+         \begin{figure}[H]
+            \caption{#4}
+            \begin{center}
+               \makebox[\textwidth]{\includegraphics[width=.6\textwidth]{#2}}
+            \end{center}
+            \legend{~}
+            \label{fig:#1}
+         \end{figure}
+      },
+      table = {
+         \markdownLaTeXTable={}%
+         \markdownLaTeXTableAlignment={}%
+         \addto@hook\markdownLaTeXTable{\begin{tabular}}%
+         \ifx\empty#1\empty\else
+            \addto@hook\markdownLaTeXTable{%
+               \begin{table}[H]
+               \centering
+               \caption{#1}
+            }%
+            \addto@hook\markdownLaTeXTableEnd{%
+               \end{table}
+            }%
+         \fi
+         \markdownLaTeXTableEnd={%
+            \markdownLaTeXBottomRule
+            \end{tabular}
+         }%
+         \markdownLaTeXRowCounter=0%
+         \markdownLaTeXRowTotal=#2%
+         \markdownLaTeXColumnTotal=#3%
+         \markdownLaTeXRenderTableRow
+      },
+      inputFencedCode = {
+         \ifx\relax#2\relax
+            \VerbatimInput{#1}
+         \else
+            \ifthenelse{\equal{#2}{LaTeX}}%
+            {\input{#1}}%
+            {
+               \begin{tcolorbox}[
+                  colback=gray!5!white,
+                  colframe=gray!75!black,
+               ]
+                  \lstinputlisting[style=#2]{#1}
+               \end{tcolorbox}
+            }%
+         \fi
+      },
+   },
+}
+\makeatother
+
+% EOF

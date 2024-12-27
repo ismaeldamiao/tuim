@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+
+[ -z "${PREFIX}" ] && PREFIX="/usr"
+TUIM_HOME="${PREFIX}/lib/tuim"
+
+if echo "$(uname -m)" | grep -q "arm"; then
+   TARGET_TRIPLE=arm-eabi
+else
+   TARGET_TRIPLE="$(uname -m)"-elf
+fi
+
+CC_ARGS="-std=c23 -c -fPIC -ffreestanding "
+CC_ARGS="${CC_ARGS} -ffunction-sections -fdata-sections "
+NOSTDINC=false
+TARGET=false
+
+for str in ${@}; do
+   if [ "${str}" = "-nostdinc" ]; then
+      NOSTDINC=true
+   elif echo "${str}" | grep -q "\-\-target="; then
+      TARGET="${str}"
+   else
+      CC_ARGS="${CC_ARGS} ${str} "
+   fi
+done
+
+if [ "${NOSTDINC}" = false ]; then
+   CC_ARGS="${CC_ARGS} -nostdinc -I ${TUIM_HOME}/include "
+else
+   CC_ARGS="${CC_ARGS} -nostdinc "
+fi
+
+if [ "${TARGET}" = false ]; then
+   CC_ARGS="--target=${TARGET_TRIPLE} ${CC_ARGS}"
+else
+   CC_ARGS="${TARGET} ${CC_ARGS}"
+fi
+
+exec clang -Wall -Wextra -Wpedantic ${CC_ARGS}

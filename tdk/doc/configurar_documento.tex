@@ -1,0 +1,76 @@
+%  Encoding: UTF-8
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %
+%  Copyright (C) 2023 I. F. F. dos SANTOS
+%
+%  Permission is hereby granted, free of charge, to any person obtaining a copy 
+%  of this software and associated documentation files (the “Software”), to 
+%  deal in the Software without restriction, including without limitation the 
+%  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+%  sell copies of the Software, and to permit persons to whom the Software is 
+%  furnished to do so, subject to the following conditions:
+%
+%  The above copyright notice and this permission notice shall be included in 
+%  all copies or substantial portions of the Software.
+%
+%  THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+%  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+%  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+%  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+%  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+%  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+%  IN THE SOFTWARE.
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %
+
+\PassOptionsToPackage{
+   english, french, spanish,   % Idioma para hifenização.
+   main=portuguese             % Idioma do documento
+}{babel}
+\PassOptionsToClass{
+   12pt,
+   a4paper,
+   sumario = tradicional
+}{memoir}
+
+
+
+\usepackage{indentfirst}        % Indenta o primeiro parágrafo
+\usepackage{microtype}          % para melhorias de justificação.
+\usepackage[htt]{hyphenat}      % Permitir hifenização usando \texttt
+\usepackage[                    % Margens conforme padrão ABNT
+   top = 3cm,
+   left = 3cm,
+   bottom = 2cm,
+   right = 2cm
+]{geometry}
+
+\usepackage{fancyhdr}
+
+\lhead[\thepage]{\thechapter}
+\chead[]{}
+\rhead[\thesection]{\thepage}
+
+\lfoot[]{}
+\cfoot[]{}
+\rfoot[]{}
+
+\renewcommand{\headrulewidth}{1.5pt}
+\renewcommand{\footrulewidth}{0pt}
+
+
+% 1ex - É a largura da letra x (minúscula)
+% 1em - É a largura da letra M (Maiúscula)
+\setlength{\parindent}{3ex}         % Tamanho do parágrafo
+\setlength{\parskip}{0em}           % Espaço entre parágrafos
+
+\makeatletter
+\expandafter\def\expandafter\normalsize\expandafter{%
+    \normalsize
+    \setlength{\abovedisplayskip}{0em}
+    \setlength{\belowdisplayskip}{0em}
+    \setlength{\abovedisplayshortskip}{0em}
+    \setlength{\belowdisplayshortskip}{0em}
+}
+\makeatother
+
+% EOF

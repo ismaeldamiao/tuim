@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+
+[ -z "${PREFIX}" ] && PREFIX="/usr"
+TUIM_HOME="${PREFIX}/lib/tuim"
+
+if echo "$(uname -m)" | grep -q "arm"; then
+   TARGET_TRIPLE=arm-eabi
+else
+   TARGET_TRIPLE="$(uname -m)"-elf
+fi
+
+LD_ARGS="-fuse-ld=lld " # defaults to LLVM's lld
+LD_ARGS="${LD_ARGS} -nostdlib -L ${TUIM_HOME}/lib "
+LD_ARGS="${LD_ARGS} -Wl,--image-base=0x0,-z,separate-code,-z,separate-loadable-segments "
+# Disable GNU extentions
+LD_ARGS="${LD_ARGS} -Wl,--hash-style=sysv " # do not use SHT_GNU_HASH
+LD_ARGS="${LD_ARGS} -Wl,-z,nognustack " # do not use PT_GNU_STACK
+LD_ARGS="${LD_ARGS} -Wl,-z,norelro " # do not use PT_GNU_RELRO
+LD_ARGS="${LD_ARGS} -Wl,--no-eh-frame-hdr " # do not use PT_GNU_EH_FRAME
+IS_SHARED=false
+
+for str in ${@}; do
+   if [ "${str}" = "--shared" ]; then
+      LD_ARGS="${LD_ARGS} -Wl,--shared,-Bsymbolic "
+      IS_SHARED=true
+   else
+      LD_ARGS="${LD_ARGS} ${str} "
+   fi
+done
+
+if [ "${IS_SHARED}" = false ]; then
+   LD_ARGS="-e main ${LD_ARGS}"
+   LD_ARGS="${LD_ARGS} -Wl,-dynamic-linker,/usr/bin/tuim "
+fi
+
+exec clang --target=${TARGET_TRIPLE} ${LD_ARGS}

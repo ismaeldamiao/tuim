@@ -1,0 +1,60 @@
+---
+name: tdk
+object_type: shared
+dependencies:
+  - libc.so
+  - libcrt.so
+  - libyaml.so
+  - libposix.so
+sources:
+  - language: C
+    files:
+      - tdk.c
+      - tdk_ld.c
+      - tdk_as.c
+      - tdk_cc.c
+      - tdk_mk.c
+---
+name: ld
+object_type: executable
+dependencies:
+  - libc.so
+  - libcrt.so
+  - libtdk.so
+sources:
+  - language: C
+    files:
+      - ld.c
+---
+name: as
+object_type: executable
+dependencies:
+  - libc.so
+  - libcrt.so
+  - libtdk.so
+sources:
+  - language: C
+    files:
+      - as.c
+---
+name: cc
+object_type: executable
+dependencies:
+  - libc.so
+  - libcrt.so
+  - libtdk.so
+sources:
+  - language: C
+    files:
+      - cc.c
+---
+name: mk
+object_type: executable
+dependencies:
+  - libc.so
+  - libcrt.so
+  - libtdk.so
+sources:
+  - language: C
+    files:
+      - mk.c

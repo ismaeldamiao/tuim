@@ -1,0 +1,16 @@
+type: shared # May be: executable, shared
+source:
+  - language: C
+    files:
+      - __aeabi_memcpy8.c
+      - __aeabi_memcpy4.c
+      - __aeabi_memcpy.c
+      - __aeabi_memset8.c
+      - __aeabi_memset4.c
+      - __aeabi_memset.c
+  - language: ARM
+    files:
+      - __aeabi_memclr8.s
+      - __aeabi_memclr4.s
+      - __aeabi_memclr.s
+...
