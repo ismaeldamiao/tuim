@@ -1,7 +1,7 @@
 ## ABI and API
 
-- [ ] Write CRT specifications processor that do not have it
-- [ ] Choosen a library for systems interation (Actually using POSIX API)
+- [ ] Write CRT specifications for processors that do not have it
+- [ ] Choosen a library for systems interaction (Actually I'm using POSIX API)
 - [ ] Choosen a library for graphical applications (propose: SDL)
 
 ## By software

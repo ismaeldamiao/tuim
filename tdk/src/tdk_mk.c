@@ -362,6 +362,9 @@ static void build(tdk_mk_args_t *args, struct config *conf){
    }else if(conf->type == ET_DYN){
       char *exec;
       size_t len;
+
+      tdk_ld_args_EnableShared(ld_args);
+
       len = strlen(conf->name) + (size_t)11;
       exec = malloc(len);
       strcpy(exec, "lib/lib");

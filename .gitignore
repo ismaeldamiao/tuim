@@ -1,4 +1,8 @@
 .*
+bin
+lib
+tmp
+
 !.gitignore
 !.vscode
 !.github

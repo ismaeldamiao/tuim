@@ -1,0 +1,25 @@
+---
+name: crt
+object_type: shared
+sources:
+# ARM ##########################################################################
+  - language: C
+    target: arm
+    files:
+      - arm/__aeabi_memcpy8.c
+      - arm/__aeabi_memcpy4.c
+      - arm/__aeabi_memcpy.c
+      - arm/__aeabi_memset8.c
+      - arm/__aeabi_memset4.c
+      - arm/__aeabi_memset.c
+      - arm/__aeabi_uread4.c
+      - arm/__aeabi_uwrite4.c
+      - arm/__aeabi_uread8.c
+      - arm/__aeabi_uwrite8.c
+  - target: arm
+    files:
+      - arm/__aeabi_memclr8.asm
+      - arm/__aeabi_memclr4.asm
+      - arm/__aeabi_memclr.asm
+      - arm/__aeabi_read_tp.asm
+...
