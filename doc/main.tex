@@ -52,10 +52,10 @@
 % agudo ó = \'{o}, Ó = \'{O}
 % agudo ú = \'{u}, Ú = \'{U}
 \titulo{%
-   Tuim Developer Kit \\ \small{Version 0}%
+   Tuim Environments \\ \small{Version 0}%
 }
-\autor{
-   I. F. F. dos{ }SANTOS\thanks{\href{mailto:ismaellxd@gmail.com}{ismaellxd@gmail.com}}
+\autor{%
+   I. F. F. dos{ }SANTOS\thanks{\href{mailto:ismaellxd@gmail.com}{ismaellxd@gmail.com}}%
 }
 \local{Maceió}
 
@@ -65,7 +65,6 @@
    pdftitle={\imprimirtitulo}, 
    pdfauthor={\imprimirautor},
    pdfcreator={LaTeX with abnTeX2},
-   pdfkeywords={PVI, EDO, C99},
    %pagebackref=true,
    bookmarksdepth=4,
    colorlinks=true,            % false: boxed links; true: colored links
@@ -84,18 +83,30 @@
 \maketitle
 
 \begin{resumoumacoluna}
-   This document describes command line tools and standard libraries
-   to build application for Tuim\cite{tuim} environments.
-   The interface is designed to be cross-platform and
-   to allow cross-compilation and interoperability betewen distinct
-   languages.
-   Generated code is designed to mach the System V ABI\cite{systemv},
-   to generate position independent code and to allow binary portability,
-   even betewen distincts operational systems.
+   This documents describes the Application Binary Interface (ABI)
+   for Tuim Environments\cite{tuim},
+   the Command Line Interface (CLI)
+   to build and execute software in those invironments
+   and the Application Programing Interface (API)
+   to develop software for for those environment.
 
    This document is in active development.
    Its CLI and ABI might change any time without any notice.
 \end{resumoumacoluna}
+
+%\begin{resumoumacoluna}
+%   This document describes command line tools and standard libraries
+%   to build application for Tuim\cite{tuim} environments.
+%   The interface is designed to be cross-platform and
+%   to allow cross-compilation and interoperability betewen distinct
+%   languages.
+%   Generated code is designed to mach the System V ABI\cite{systemv},
+%   to generate position independent code and to allow binary portability,
+%   even betewen distincts operational systems.
+
+%   This document is in active development.
+%   Its CLI and ABI might change any time without any notice.
+%\end{resumoumacoluna}
 
 \newpage
 \tableofcontents
@@ -106,56 +117,135 @@
 \textual
 
 % -------------------------------------
-% Introduction
+% SECTION
 % -------------------------------------
 \section{Introduction}
 
-Various kind of code can be managed using the TDK:
+Tuim is designed to provide a way to execute the same binary in distincts systems
+without the need of recompilation or virtual machines.
+A Tuim Environment consists of a user interface suitable to start the execution
+of softwares conforming to specifications in this document
+and the system in here the execution takes place.
 
-\begin{itemize}
-\item \textbf{Object code:}
-   The basic type of code is the object code.
-   For the purposes of TDK it can be in three forms
-   as relocatable object code, shared object or executable
-   as describeded by the ELF file format\cite{systemv}.
-   In all cases TDK is designed to work only with position independent code,
-   meaning that the code can be loaded at
-   relatively arbitrary address in memory.
-\item \textbf{Machine code:}
-   Object code contains machine code and others informations,
-   but, out of object code, machine code are usually written in a 
-   human readable form, TDK is designed to assemble such kind of code
-   to object code.
-\item \textbf{Source code:}
-   A relatively easy way to writte softwares is using a programing language,
-   TDK is designed to compile source code written in such language to
-   object code.
-\end{itemize}
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{Application Binary Interface}
 
-Executables are the final desired code in most projects,
-these files need to be loaded in memory before execution,
-sometimes executable also need to be dynamically linked with shared objects
-containing a library of code neccessary for execution.
-Relocatable objects are the result from the compile or assemble step and
-need to linked together in order to get the executable or shared object.
+Tuim is designed to execute the
+Executable and Linkable Format (ELF),
+from System V\cite{systemv} ABI.
+The \texttt{EI\_OSABI} field in ELF identification
+must holds \texttt{ELFOSABI\_NONE},
+ensuring that no ELF extension are used excepts those defined in
+processor supplement.
 
-\subsection{Target}
+Both executable and shared objects must be build
+with position independent code in order to allow Tuim
+to load correctly the code.
+Tuim also preserves in the memory the
+difference between virtual addresses in the file.
 
-Target environment usualy define the instruction set architecture
-(ISA), the endianness
---- for processor with more than one endianness vailable in the market ---
-and file format
---- for processors that support both 32bit and 64bit ELF specification ---.
+By convenction executable files uses the \texttt{.elf} extension,
+while \texttt{.so} is for shared objects and
+\texttt{.o} for relocatable files.
 
-Programs build for one target can be successfully loaded on environments wrose
-processor mach the requirements,
-also can be successfully initialized if the required libraries are present.
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{Tuim from command-line interface}
+
+For command-line environments Tuim can be used to load and execute
+a ELF via:
+
+\begin{lstlisting}[style=bash]
+tuim program.elf [arg ...]
+\end{lstlisting}
+
+Then the \texttt{program.elf} executable file is loaded,
+if the file request a library then the unique default directory
+where the loader find for it is
+the subdirectory \texttt{lib} at the directory from the
+environment variable \texttt{TUIM\_HOME}.
+If all dependencies are present and symbols are correctly
+relocated then execution takes place.
+
+The executable file's entry point is called like if it has
+the following signature in a C program.
+
+\begin{lstlisting}[style=c]
+int main(int argc, char **argv);
+\end{lstlisting}
+
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{Tuim from graphical user interface}
+
+\textbf{TODO}
 
 \newpage
 % -------------------------------------
-% Linker
+% SECTION
 % -------------------------------------
-\section{Linker}
+\section{Runtime libraries}
+
+A program may request libraries as shared objects,
+if the shared object name has no slash then the loader find for it
+first on directories specified by the environment variable
+\texttt{LD\_LIBRARY\_PATH} and then in \texttt{<TUIM\_HOME>/lib}.
+The program may need the environment variable \texttt{LD\_LIBRARY\_PATH}
+set in order to allow the loader dinamically link with custom shared objects.
+The directory \texttt{<TUIM\_HOME>/lib} is reserved for Tuim
+and all shared object names are reserved for Tuim,
+this means that if a program request any shared object for purposes
+others that defined in this document than the environment variable
+\texttt{LD\_LIBRARY\_PATH} need to be used.
+
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{Compiler runtime library}
+
+The \texttt{libcrt.so} shared object
+expose symbols from the Compiler Runtime Library,
+usually helper functions that the compiler need.
+Symbols exposed by this shared object
+begins with two underscores or an underscore followed by a capital letter.
+
+Some processor suplements provide a specification for the
+Compiler Runtime Library, in that case this is the library in the shared
+object \texttt{libcrt.so}.
+If the processor suplement do not provide such specification than
+is a undefined bahavior the explicit use of
+any symbol exposed by \texttt{libcrt.so} in source code,
+these symbols are reserved for the use of the compiler.
+
+TODO: Alternatively, I want to provide a CLang compatible ABI for processors
+without such specification.
+
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{The C standard library}
+
+The \texttt{libc.so} shared object
+expose symbols from the C Standard Library, the latest version\cite{ISO9899}.
+Symbols exposed by this shared object are symbols reserved by the C standard.
+
+\newpage
+% -------------------------------------
+% SECTION
+% -------------------------------------
+\section{Tuim Developer Kit}
+
+The Tuim Developer Kit is a set of tools designed to write program for Tuim
+and to allow language interoperability.
+
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{Linker}
 
 \noindent NAME
 
@@ -196,11 +286,10 @@ it outputs executables or a shared objects.
    \texttt{lib<library>.so} dependency.
 \end{description}
 
-\newpage
-% -------------------------------------
-% Assembler
-% -------------------------------------
-\section{Assembler}
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{Assembler}
 
 \noindent NAME
 
@@ -232,11 +321,10 @@ it outputs relocatable files.
    Specify the ISA.
 \end{description}
 
-\newpage
-% -------------------------------------
-% C Compiler
-% -------------------------------------
-\section{C Compiler}
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{C Compiler}
 
 \noindent NAME
 
@@ -271,33 +359,10 @@ it outputs relocatable files.
    Define the target processor.
 \end{description}
 
-\subsection{Libraries}
-\label{sec:cc:library}
-
-About the libraries supposed to be present at runtime,
-the C compiler is allowed to expect that the C Standard Library and
-the Compiler Runtime Library are available.
-In order to correctly link with these libraries one can use the
-\texttt{-lc} and \texttt{-lcrt} linker flags,
-then the linker find on predefined places for
-\texttt{libc.so} and \texttt{libcrt.so} object files.
-The \texttt{libc.so} shared object
-expose symbols from the C Standard Library, the latest version\cite{ISO9899}.
-The \texttt{libcrt.so} shared object
-expose symbols from the Compiler Runtime Library,
-usually helper functions that the compiler need to implement
-the C Programing Language itself.
-None of these libraries expose%
-\footnote{A symbol is \tetit{exposed}
-if the symbol binding is other than \texttt{STB\_LOCAL}} any non standard symbol
-except symbols reserved for the implementation, namely that begins with
-two underscores or an underscore followed by a capital letter.
-
-\newpage
-% -------------------------------------
-% Build system
-% -------------------------------------
-\section{Build system}
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{Build system}
 
 \noindent NAME
 
@@ -325,6 +390,9 @@ executables and shared objects from multiple source files.
    Define the target processor.
 \end{description}
 
+% -----------------
+% SUBSECTION
+% -----------------
 \subsection{Configuration file}
 
 Configuration files are used to describe how source code are assembled,
@@ -363,6 +431,33 @@ Source code files are describeded by the list \texttt{source}:
 \end{description}
 
 
+% ------------------------------------------------------------------------------
+% ELEMENTOS PÓS-TEXTUAIS
+% ------------------------------------------------------------------------------
+   \postextual
+   % ---------------------------------------------------------------------------
+   % Referências bibliográficas
+   % ---------------------------------------------------------------------------
+   \bibliography{references}
+   \apendices
+   \renewcommand{\thesection}{\Alph{section}}
+
+\section{Targets}
+\label{apendice:target}
+
+Allowed targets are
+\begin{itemize}
+   \item \texttt{x86}
+   \item \texttt{x86\_64}
+   \item \texttt{arm}
+   \item \texttt{aarch64}
+   \item \texttt{riscv32}
+   \item \texttt{riscv64}
+\end{itemize}
+
+% -----------------
+% SUBSECTION
+% -----------------
 \subsection{Example}
 
 Consider the following project.
@@ -411,52 +506,5 @@ ld -o lib/foo.so -lc -lcrt tmp/foo.o tmp/boo.o
 cc -o tmp/foo.o src/foo.c
 ld -o lib/foo.so -lc -lcrt tmp/foo.o
 \end{lstlisting}
-
-
-% ------------------------------------------------------------------------------
-% ELEMENTOS PÓS-TEXTUAIS
-% ------------------------------------------------------------------------------
-   \postextual
-   % ---------------------------------------------------------------------------
-   % Referências bibliográficas
-   % ---------------------------------------------------------------------------
-   \bibliography{references}
-   \apendices
-   \renewcommand{\thesection}{\Alph{section}}
-
-
-\section{The Compiler Runtime Library}
-
-Some processor suplements provide a specification for the
-Compiler Runtime Library, in that case this is the library in the shared
-object \texttt{libcrt.so}.
-If the processor suplement do not provide such specification than
-is a undefined bahavior the explicit use of
-any symbol exposed by \texttt{libcrt.so} in source code,
-these symbols are reserved for the use of the compiler.
-
-TODO: Alternatively, I want to provide a CLang compatible ABI for processors
-without such specification.
-
-\section{Others libraries}
-
-TODO: In this section I want to describe the ABI for dependency
-libraries others than
-the language standard library or the compiler runtime library.
-Libraries to control, for example, graphical and sound devices.
-I also want libraries for scientific purposes like BLAS.
-
-\section{Targets}
-\label{apendice:target}
-
-Allowed targets are
-\begin{itemize}
-   \item \texttt{x86}
-   \item \texttt{x86\_64}
-   \item \texttt{arm}
-   \item \texttt{aarch64}
-   \item \texttt{riscv32}
-   \item \texttt{riscv64}
-\end{itemize}
 
 \end{document}

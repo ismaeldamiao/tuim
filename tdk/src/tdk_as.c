@@ -73,7 +73,7 @@ int tdk_as(tdk_as_args_t *args){
 
    sprintf(
       cmd, 
-      "clang -c -fPIC"
+      "clang -c -fPIC -x assembler-with-cpp"
    );
 
    if(STRCMP(args->target, "arm")){
