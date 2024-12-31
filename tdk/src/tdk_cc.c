@@ -69,17 +69,21 @@ int tdk_cc(tdk_cc_args_t *args){
       "clang --std=c23 -c -fPIC -ffreestanding"
    );
 
-   if(STRCMP(args->target, "arm")){
-      sprintf(cmd, "%s --target=arm-none-eabi", cmd);
-   }else if(STRCMP(args->target, "armv7a")){
-      sprintf(cmd, "%s --target=armv7a-none-eabi", cmd);
-   }else{
-      return EXIT_FAILURE;
+   {
+      int i = 0;
+      while(!STRCMP(args->target, target[i])){
+         if(i == sizeof(target) / sizeof(char*)){
+            fprintf(stderr, "cc: Unknown target.\n");
+            return EXIT_FAILURE;
+         }
+         ++i;
+      }
+      sprintf(cmd, "%s --target=%s", cmd, triple[i]);
    }
 
    tuim_home = getenv("TUIM_HOME");
    if(tuim_home != NULL){
-      sprintf(cmd, "%s -nostdinc -I '%s/include'", cmd, tuim_home);
+      sprintf(cmd, "%s -nostdinc -isystem '%s/include'", cmd, tuim_home);
    }
 
    if(args->output != NULL){

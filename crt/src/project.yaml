@@ -6,6 +6,24 @@ sources:
   - language: C
     target: arm
     files:
+      - arm/__aeabi_dadd.c
+      - arm/__aeabi_fadd.c
+      - arm/__aeabi_cdcmpeq.c
+      - arm/__aeabi_cfcmpeq.c
+      - arm/__aeabi_d2iz.c
+      - arm/__aeabi_d2f.c
+      - arm/__aeabi_i2d.c
+      - arm/__aeabi_ldivmod.c
+      - arm/__aeabi_uldivmod.c
+      - arm/__aeabi_llsl.c
+      - arm/__aeabi_llsr.c
+      - arm/__aeabi_lasr.c
+      - arm/__aeabi_lcmp.c
+      - arm/__aeabi_ulcmp.c
+      - arm/__aeabi_idiv.c
+      - arm/__aeabi_idivmod.c
+      - arm/__aeabi_uidiv.c
+      - arm/__aeabi_uidivmod.c
       - arm/__aeabi_memcpy8.c
       - arm/__aeabi_memcpy4.c
       - arm/__aeabi_memcpy.c
@@ -18,6 +36,8 @@ sources:
       - arm/__aeabi_uwrite8.c
   - target: arm
     files:
+      - arm/__aeabi_idiv0.asm
+      - arm/__aeabi_ldiv0.asm
       - arm/__aeabi_memclr8.asm
       - arm/__aeabi_memclr4.asm
       - arm/__aeabi_memclr.asm

@@ -1,3 +1,11 @@
+# Usage:
+# mk src
+# Or manually
+# clang -o lib/libtdk.so -fPIC -std=c23 --shared -lyaml src/tdk.c src/tdk_ld.c src/tdk_as.c src/tdk_cc.c src/tdk_mk.c
+# clang -std=c23 -o bin/ld -L lib -ltdk src/ld.c
+# clang -std=c23 -o bin/as -L lib -ltdk src/as.c
+# clang -std=c23 -o bin/cc -L lib -ltdk src/cc.c
+# clang -std=c23 -o bin/mk -L lib -ltdk src/mk.c
 ---
 name: tdk
 object_type: shared

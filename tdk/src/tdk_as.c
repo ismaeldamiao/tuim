@@ -76,10 +76,16 @@ int tdk_as(tdk_as_args_t *args){
       "clang -c -fPIC -x assembler-with-cpp"
    );
 
-   if(STRCMP(args->target, "arm")){
-      sprintf(cmd, "%s --target=arm-none-eabi", cmd);
-   }else{
-      return EXIT_FAILURE;
+   {
+      int i = 0;
+      while(!STRCMP(args->target, target[i])){
+         if(i == sizeof(target) / sizeof(char*)){
+            fprintf(stderr, "cc: Unknown target.\n");
+            return EXIT_FAILURE;
+         }
+         ++i;
+      }
+      sprintf(cmd, "%s --target=%s", cmd, triple[i]);
    }
 
    if(args->output != NULL){

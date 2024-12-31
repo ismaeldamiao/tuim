@@ -3,6 +3,16 @@
 
 #include <stdlib.h>
 
+static char *target[] = {
+   "arm",
+   "armv7a"
+};
+
+static char *triple[] = {
+   "arm-none-eabi",
+   "armv7a-none-eabi"
+};
+
 static void* ReallocString(char *dest, const char *src){
    void *ptr;
    ptr = realloc(dest, strlen(src) + (size_t)1);

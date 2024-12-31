@@ -1,4 +1,4 @@
-long long __aeabi_llsr(long long n, int shift) {
+long long __aeabi_lasr(long long n, int shift) {
     if (shift < 0 || shift >= 64) {
         // Handle invalid shift value
         // You can either return an error or abort the program
@@ -9,12 +9,22 @@ long long __aeabi_llsr(long long n, int shift) {
     unsigned int high = (unsigned int)(n >> 32);
     unsigned int low = (unsigned int)n;
 
+    if (n < 0) {
+        high = ~high + 1;
+        low = ~low + 1;
+    }
+
     if (shift < 32) {
         low = (low >> shift) | (high << (32 - shift));
         high = high >> shift;
     } else {
         low = high >> (shift - 32);
-        high = 0;
+        high = (n < 0) ? 0xFFFFFFFF : 0;
+    }
+
+    if (n < 0) {
+        high = ~high + 1;
+        low = ~low + 1;
     }
 
     return ((long long)high << 32) | low;

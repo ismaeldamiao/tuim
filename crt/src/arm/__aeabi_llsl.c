@@ -1,20 +1,21 @@
-#include "aeabi.h"
+long long __aeabi_llsl(long long n, int shift) {
+    if (shift < 0 || shift >= 64) {
+        // Handle invalid shift value
+        // You can either return an error or abort the program
+        // For this example, we'll just return 0
+        return 0;
+    }
 
-int64_t __aeabi_llsl(int64_t a, int shift){
-   //  TODO: Reimplement
-   union dword dword = { .dw = a };
-   unsigned long hi = dword.w[1];
-   unsigned long lo = dword.w[0];
+    unsigned int high = (unsigned int)(n >> 32);
+    unsigned int low = (unsigned int)n;
 
-   if (shift >= 32) {
-      hi = lo << (shift - 32);
-      lo = 0;
-   } else if (shift > 0) {
-      hi = (hi << shift) | (lo >> (32 - shift));
-      lo = lo << shift;
-   }
+    if (shift < 32) {
+        high = (high << shift) | (low >> (32 - shift));
+        low = low << shift;
+    } else {
+        high = low << (shift - 32);
+        low = 0;
+    }
 
-   dword.w[1] = hi;
-   dword.w[0] = lo;
-   return dword.dw;
+    return ((long long)high << 32) | low;
 }

@@ -8,6 +8,7 @@
 int main(int argc, char **argv){
    unsigned int tdk_version, release_major_version,  release_minor_version;
    char version_str[512], default_target[10];
+   int ret;
    tdk_cc_args_t *args;
 
    if(argc < 2) return 1;
@@ -50,8 +51,8 @@ int main(int argc, char **argv){
       }
    }
 
-   tdk_cc(args);
+   ret = tdk_cc(args);
    tdk_cc_args_free(args);
 
-   return EXIT_SUCCESS;
+   return ret;
 }

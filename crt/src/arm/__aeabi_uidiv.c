@@ -1,9 +1,25 @@
-#include "aeabi.h"
+// Function to perform unsigned integer division
+unsigned int __aeabi_uidiv(unsigned int numerator, unsigned int denominator) {
+   // Initialize the quotient
+   unsigned int quotient = 0;
 
-unsigned __aeabi_uidiv(unsigned numerator, unsigned denominator){
-   struct qr qr = { .q_n = 0, .r_n = 0 };
+   // Handle division by zero
+   if (denominator == 0) {
+      // Division by zero is undefined, here we return 0
+      return 0xffffffff;
+   }
 
-   uint_div_qr(numerator, denominator, &qr);
+   // Iterate over each bit of the numerator
+   for (int i = 31; i >= 0; i--) {
+      // Check if the current bit of the numerator is greater than or equal to the denominator
+      if ((numerator >> i) >= denominator) {
+         // Subtract the shifted denominator from the shifted numerator
+         numerator -= (denominator << i);
 
-   return qr.q;
+         // Set the corresponding bit in the quotient
+         quotient |= (1U << i);
+      }
+   }
+
+   return quotient;
 }

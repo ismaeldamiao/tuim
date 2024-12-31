@@ -3,6 +3,8 @@
 
 bool usetmp = false;
 
+
+
 void tdk_GetDefaultTarget(char *default_target){
    /* Default target */
    #if defined(__ARM_ARCH)

@@ -312,9 +312,12 @@ static char* ObjName(const char *SourceName){
    return buf;
 }
 
-static void build(tdk_mk_args_t *args, struct config *conf){
+static void* build(tdk_mk_args_t *args, struct config *conf){
    tdk_ld_args_t *ld_args;
+   char *ret;
    struct stat sb;
+
+   ret = NULL;
 
    /* --- Set up directories --- */
    /* FIXME: Replace POSIX API by a more convenient library.
@@ -345,8 +348,8 @@ static void build(tdk_mk_args_t *args, struct config *conf){
 
    /* --- Parse conf --- */
 
-   if(conf->name == NULL) return;
-   if(conf->sources == NULL) return;
+   if(conf->name == NULL) return NULL;
+   if(conf->sources == NULL) return NULL;
 
    ld_args = tdk_ld_args_defaults();
    if(conf->type == ET_EXEC){
@@ -396,7 +399,12 @@ static void build(tdk_mk_args_t *args, struct config *conf){
                tdk_cc_args_SetOutput(cc_args, obj);
                tdk_ld_args_AddInput(ld_args, obj);
 
-               tdk_cc(cc_args);
+               if(tdk_cc(cc_args) == EXIT_FAILURE){
+                  ret = src;
+                  free(obj);
+                  tdk_cc_args_free(cc_args);
+                  goto end;
+               }
 
                free(src);
                free(obj);
@@ -419,7 +427,12 @@ static void build(tdk_mk_args_t *args, struct config *conf){
             tdk_as_args_SetOutput(as_args, obj);
             tdk_ld_args_AddInput(ld_args, obj);
 
-            tdk_as(as_args);
+            if(tdk_as(as_args) == EXIT_FAILURE){
+               ret = src;
+               free(obj);
+               tdk_as_args_free(as_args);
+               goto end;
+            }
 
             free(src);
             free(obj);
@@ -448,11 +461,11 @@ static void build(tdk_mk_args_t *args, struct config *conf){
    end:
    tdk_ld_args_free(ld_args);
 
-   return;
+   return ret;
 }
 
 int tdk_mk(tdk_mk_args_t *args){
-   char str[512];
+   char str[512], *ret;
    FILE *stream;
    struct config **configs, **conf;
    yaml_parser_t *parser;
@@ -473,12 +486,19 @@ int tdk_mk(tdk_mk_args_t *args){
    configs = parse_yaml(parser);
 
    if(configs == NULL){
-      // TODO: Handle error (incorrect input)
+      char str[502];
+      strcat(args->input, "/project.yaml");
+      fprintf(stderr, "mk: Can't parse %s.\n", str);
       return EXIT_FAILURE;
    }
 
-   for(struct config **conf = configs; *conf != NULL; ++conf)
-      build(args, *conf);
+   for(struct config **conf = configs; *conf != NULL; ++conf){
+      ret = build(args, *conf);
+      if(ret != NULL){
+         fprintf(stderr, "mk: Can't build %s.\n", ret);
+         break;
+      }
+   }
 
    FreePtrArray(configs);
 
@@ -486,5 +506,7 @@ int tdk_mk(tdk_mk_args_t *args){
    free(parser);
    fclose(stream);
 
+   if(ret != NULL)
+      return EXIT_FAILURE;
    return EXIT_SUCCESS;
 }
