@@ -23,7 +23,7 @@
 ***************************************************************************** */
 #include <stddef.h>
 #include <stdint.h>
-#include "include/tuim.h"
+#include "tuim.h"
 #include "elf.h"
 /* ------------------------------------
    Function to compile C source code.

@@ -23,7 +23,7 @@
 ***************************************************************************** */
 #include <stdint.h>
 
-#include "include/tuim.h"
+#include "tuim.h"
 #include "elf.h"
 #include "tuim_private.h"
 #include "tuim_utils.h"
@@ -31,7 +31,7 @@
 /* ------------------------------------
    Function to find a symbol in a alread loaded ELF file.
    * Part of tuim project.
-   * Last modified: Octubre 10, 2024.
+   * Last modified: January 11, 2025.
 ------------------------------------ */
 
 void* tuim_findsymbol(const char *symbol, const tuim_elf *elf){

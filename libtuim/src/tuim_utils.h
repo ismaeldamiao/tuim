@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "include/tuim.h"
+#include "tuim.h"
 #include "elf.h"
 #include "tuim_private.h"
 

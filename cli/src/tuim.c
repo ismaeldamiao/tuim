@@ -22,72 +22,46 @@
    IN THE SOFTWARE.
 ***************************************************************************** */
 #include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <tuim.h>
 
 /* ------------------------------------
    Interface for Tuim's ELF loader, to execute program from command line.
    * Part of tuim project.
-   * Last modified: Octubre 15, 2024.
+   * Last modified: January 11, 2025.
 ------------------------------------ */
 
-//#define DBG(str, ...) fprintf(stdout, str, __VA_ARGS__)
-#define DBG(str, ...)
-
 int main(int argc, char **argv){
+   int i, prog, *return_code;
    tuim_elf *elf;
-   int(*main_)(int,char**);
-   int return_code;
+   struct args { int argc; char **argv; } args;
 
-   /* Validate argument. */
-   if(argc < 2) goto usage;
+   /* Validate arguments. */
+   prog = 0;
+   for(i = 1; i < argc; ++i){
+      if(argv[i][0] == '-'){}else{
+         prog = i;
+         break;
+      }
+   }
+   if(prog == 0) return 0;
 
-   /* Load the executable, referenced in argv[1]. */
-   elf = tuim_loader(argv[1]);
-   if(elf == NULL) goto load_error;
+   /* Load the executable, referenced in argv[prog]. */
+   elf = tuim_loader(argv[prog], TUIM_LOADER_FEXEC);
+   if(elf == NULL){
+      tuim_perror(argv[0]);
+      return 127;
+   }
 
-   /* Jump to the entry point. */
-   main_ = (int(*)(int,char**))tuim_getentry(elf);
-   if(main_ == NULL) goto jump_error;
-   DBG("%s: Jumping to %p.\n", argv[0], main_);
-   return_code = main_(--argc, ++argv);
-   DBG("%s: back to the control.\n", argv[-1]);
+   /* Execute */
+   args.argc = argc - prog;
+   args.argv = argv + prog;
+   return_code = tuim_exec(TUIM_EXEC_TC, TUIM_EXEC_FNONE, elf, &args);
+   if(return_code == NULL){
+      tuim_perror(argv[0]);
+      return 127;
+   }
 
    /* Free the memory and return. */
    tuim_free(elf);
-   return return_code;
-
-   usage:
-
-   fprintf(stderr, "Usage: %s <elf-file>\n", argv[0]);
-   return EXIT_FAILURE;
-
-   load_error:
-
-   if(tuim_error == TUIM_ERROR_MEMORY)
-      fprintf(stderr, "%s: Unsuficient memory.\n", tuim_error_filename);
-   else if(tuim_error == TUIM_ERROR_READING)
-      fprintf(stderr, "%s: Error reading the file.\n", tuim_error_filename);
-   else if(tuim_error == TUIM_ERROR_INVALIDELF)
-      fprintf(stderr, "%s: Not a valid ELF file.\n", tuim_error_filename);
-   else if(tuim_error == TUIM_ERROR_MACHINE)
-      fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
-   else if(tuim_error == TUIM_ERROR_SYSTEM)
-      fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
-   else if(tuim_error == TUIM_ERROR_NOTDYN)
-      fprintf(stderr, "%s: The ELF image is not a shared object.\n", tuim_error_filename);
-   else if(tuim_error == TUIM_ERROR_MACHINE)
-      fprintf(stderr, "%s: The ELF image is not for this machine.\n", tuim_error_filename);
-   else if(tuim_error == TUIM_ERROR_UNSUPPORTED_RT)
-      fprintf(stderr, "%s: Unsupported relocation type.\n", tuim_error_filename);
-   else if(tuim_error == TUIM_ERROR_SYMBOLNOTFOUND)
-      fprintf(stderr, "%s: Can't find the symbol   %s\n", tuim_error_filename, tuim_str);
-
-   return EXIT_FAILURE;
-
-   jump_error:
-
-   fprintf(stderr, "%s: Can't find the entry point.\n", argv[1]);
-   return_code = EXIT_FAILURE;
+   return *return_code;
 }

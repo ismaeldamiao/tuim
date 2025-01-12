@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "include/tuim.h"
+#include "tuim.h"
 #include "elf.h"
 
 #include "tuim_private.h"

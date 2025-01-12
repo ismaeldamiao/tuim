@@ -2,7 +2,17 @@
 #ifndef TUIM_PRIVATE_H
 #define TUIM_PRIVATE_H 1
 
+#include <stddef.h>
 #include <stdint.h>
+
+
+
+/* --------------------- */
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
+/* --------------------- */
 
 struct tuim_elf {
    void *ehdr;   /* Pointer to ELF header */

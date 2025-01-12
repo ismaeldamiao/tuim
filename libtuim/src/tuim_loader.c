@@ -28,16 +28,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <tuim.h>
 
-#include "include/tuim.h"
+#include "tuim.h"
 #include "elf.h"
 
 #include "tuim_private.h"
 #include "tuim_utils.h"
 /* ------------------------------------
-   Function to load in memory an PIE (shared object, ELF file).
+   Function to load in memory a PIE ELF file.
    * Part of tuim project.
-   * Last modified: December 7, 2024.
+   * Last modified: January 11, 2025.
 ------------------------------------ */
 
 //#define DBG(str, ...) fprintf(stdout, str, __VA_ARGS__)
@@ -108,13 +109,13 @@ static void* load_program(
 
       if(fseek(file_ptr, (long)p_offset, SEEK_SET) != 0){
          free(program);
-         tuim_error = TUIM_ERROR_READING;
+         tuim_errno = TUIM_EREADING;
          return NULL;
       }
 
       if(fread(buf, sizeof(uint8_t), p_filesz, file_ptr) != p_filesz){
          free(program);
-         tuim_error = TUIM_ERROR_READING;
+         tuim_errno = TUIM_EREADING;
          return NULL;
       }
 
@@ -133,25 +134,25 @@ static void* load(uintptr_t offset, size_t size, FILE *file_ptr){
 
    data = malloc(size);
    if(data == NULL){
-      tuim_error = TUIM_ERROR_MEMORY;
+      tuim_errno = TUIM_EMEMORY;
       return NULL;
    }
 
    if(fseek(file_ptr, (long)offset, SEEK_SET) != 0){
-      tuim_error = TUIM_ERROR_READING;
+      tuim_errno = TUIM_EREADING;
       free(data);
       return NULL;
    }
 
    if(fread(data, sizeof(uint8_t), size, file_ptr) != size){
-      tuim_error = TUIM_ERROR_READING;
+      tuim_errno = TUIM_EREADING;
       return NULL;
    }
 
    return data;
 }
 
-tuim_elf* tuim_loader(const char *file_path){
+tuim_elf* tuim_loader(const char *file_path, unsigned flags){
    size_t dyn_num, status;
    FILE *file_ptr;
 
@@ -170,7 +171,7 @@ tuim_elf* tuim_loader(const char *file_path){
    /* Open the ELF to read */
    file_ptr = fopen(file_path, "rb");
    if(file_ptr == NULL){
-      tuim_error = TUIM_ERROR_READING;
+      tuim_errno = TUIM_EREADING;
       goto error;
    }
 
@@ -178,7 +179,7 @@ tuim_elf* tuim_loader(const char *file_path){
       files loaded. */
    elf = malloc(sizeof(tuim_elf));
    if(elf == NULL){
-      tuim_error = TUIM_ERROR_MEMORY;
+      tuim_errno = TUIM_EMEMORY;
       goto error;
    }
    elf->ehdr = ehdr;
@@ -190,7 +191,7 @@ tuim_elf* tuim_loader(const char *file_path){
    /* Load the ELF header e_ident field */
    ehdr = malloc(sizeof(Elf_Ehdr));
    if(ehdr == NULL){
-      tuim_error = TUIM_ERROR_MEMORY;
+      tuim_errno = TUIM_EMEMORY;
       goto error;
    }
    elf->ehdr = ehdr;
@@ -202,7 +203,7 @@ tuim_elf* tuim_loader(const char *file_path){
       file_ptr
    );
    if(status != EI_NIDENT){
-      tuim_error = TUIM_ERROR_READING;
+      tuim_errno = TUIM_EREADING;
       goto error;
    }else if(
       (ELF_EI_MAG0(*ehdr) != ELFMAG0) ||
@@ -210,16 +211,16 @@ tuim_elf* tuim_loader(const char *file_path){
       (ELF_EI_MAG2(*ehdr) != ELFMAG2) ||
       (ELF_EI_MAG3(*ehdr) != ELFMAG3)
    ){
-      tuim_error = TUIM_ERROR_INVALIDELF;
+      tuim_errno = TUIM_EINVALIDELF;
       goto error;
    }else if(ELF_EI_CLASS(*ehdr) != ELFCLASS){
-      tuim_error = TUIM_ERROR_MACHINE;
+      tuim_errno = TUIM_EMACHINE;
       goto error;
    }else if(ELF_EI_DATA(*ehdr) != ELFDATA){
-      tuim_error = TUIM_ERROR_MACHINE;
+      tuim_errno = TUIM_EMACHINE;
       goto error;
    }else if(ELF_EI_VERSION(*ehdr) != EV_CURRENT){
-      tuim_error = TUIM_ERROR_INVALIDELF;
+      tuim_errno = TUIM_EINVALIDELF;
       goto error;
    }
 
@@ -231,16 +232,19 @@ tuim_elf* tuim_loader(const char *file_path){
       file_ptr
    );
    if(status != (sizeof(Elf_Ehdr) - EI_NIDENT)){
-      tuim_error = TUIM_ERROR_READING;
+      tuim_errno = TUIM_EREADING;
       goto error;
-   }else if((ELF_E_TYPE(*ehdr) != ET_DYN) && (ELF_E_TYPE(*ehdr) != ET_EXEC)){
-      tuim_error = TUIM_ERROR_NOTDYN;
+   }else if((ELF_E_TYPE(*ehdr) == ET_EXEC) && !(flags & TUIM_LOADER_FEXEC)){
+      tuim_errno = TUIM_EINVALIDELF;
+      goto error;
+   }else if((ELF_E_TYPE(*ehdr) == ET_DYN) && !(flags & TUIM_LOADER_FDYN)){
+      tuim_errno = TUIM_EINVALIDELF;
       goto error;
    }else if(ELF_E_MACHINE(*ehdr) != EM_){
-      tuim_error = TUIM_ERROR_MACHINE;
+      tuim_errno = TUIM_EMACHINE;
       goto error;
    }else if(ELF_E_VERSION(*ehdr) != EV_CURRENT){
-      tuim_error = TUIM_ERROR_INVALIDELF;
+      tuim_errno = TUIM_EINVALIDELF;
       goto error;
    }
 
@@ -257,7 +261,7 @@ tuim_elf* tuim_loader(const char *file_path){
          e_phoff = ELF_E_PHOFF(*ehdr);
 
          if((size_t)e_phentsize < sizeof(Elf_Phdr)){
-            tuim_error = TUIM_ERROR_INVALIDELF;
+            tuim_errno = TUIM_EINVALIDELF;
             goto error;
          }
 
@@ -271,7 +275,7 @@ tuim_elf* tuim_loader(const char *file_path){
 
          elf->segments = malloc(sizeof(void*) * (size_t)(e_phnum));
          if(elf->segments == NULL){
-            tuim_error = TUIM_ERROR_MEMORY;
+            tuim_errno = TUIM_EMEMORY;
             free(phdr);
             elf->phdr = NULL;
             goto error;
@@ -283,7 +287,7 @@ tuim_elf* tuim_loader(const char *file_path){
          elf->program = load_program(e_phnum, phdr, file_ptr, elf);
          DBG("%p.\n", elf->program);
          if(elf->program == NULL){
-            tuim_error = TUIM_ERROR_MEMORY;
+            tuim_errno = TUIM_EMEMORY;
             free(phdr);
             elf->phdr = NULL;
             goto error;
@@ -306,7 +310,7 @@ tuim_elf* tuim_loader(const char *file_path){
          e_shoff = ELF_E_SHOFF(*ehdr);
 
          if(e_shentsize < sizeof(Elf_Shdr)){
-            tuim_error = TUIM_ERROR_INVALIDELF;
+            tuim_errno = TUIM_EINVALIDELF;
             goto error;
          }
 
@@ -319,7 +323,7 @@ tuim_elf* tuim_loader(const char *file_path){
 
          elf->sections = malloc(sizeof(void*) * (size_t)e_shnum);
          if(elf->sections == NULL){
-            tuim_error = TUIM_ERROR_MEMORY;
+            tuim_errno = TUIM_EMEMORY;
             free(shdr);
             elf->shdr = NULL;
             goto error;
@@ -350,7 +354,7 @@ tuim_elf* tuim_loader(const char *file_path){
                if(ELF_SH_TYPE(shdr[i]) == SHT_NOBITS){
                   elf->sections[i] = malloc(sh_size);
                   if(elf->sections[i] == NULL){
-                     tuim_error = TUIM_ERROR_MEMORY;
+                     tuim_errno = TUIM_EMEMORY;
                      goto error;
                   }
                }else{
@@ -431,7 +435,7 @@ tuim_elf* tuim_loader(const char *file_path){
             while(*sonames){
                dep = list_find(tuim_loaded, *sonames);
                if(dep == NULL)
-                  dep = tuim_loader(*sonames);
+                  dep = tuim_loader(*sonames, TUIM_LOADER_FDYN);
                if(dep) break;
                free(*sonames);
                ++sonames;
@@ -446,14 +450,14 @@ tuim_elf* tuim_loader(const char *file_path){
          }else{
             dep = list_find(tuim_loaded, str(soname));
             if(dep == NULL)
-               dep = tuim_loader(str(soname));
+               dep = tuim_loader(str(soname), TUIM_LOADER_FDYN);
             if(dep == NULL)
                goto error;
          }
 
          node = list_add((void*)(elf->sections), str(soname), dep);
          if(node == NULL){
-            tuim_error = TUIM_ERROR_MEMORY;
+            tuim_errno = TUIM_EMEMORY;
             goto error;
          }
       }
@@ -569,7 +573,7 @@ AARCH32 relocations
          findsymbol(&dep, &sym, strtab + st_name, elf->sections[0]);
 
          if(dep == NULL){
-            tuim_error = TUIM_ERROR_SYMBOLNOTFOUND;
+            tuim_errno = TUIM_ESYMBOLNOTFOUND;
             strcpy(tuim_str, str(strtab + st_name));
             goto error;
          }
@@ -627,7 +631,7 @@ AARCH32 relocations
          T = UINT32_C(0x00000000);
       *((uint32_t*)P) = (S + A) | T;
    }else{
-      tuim_error = TUIM_ERROR_UNSUPPORTED_RT;
+      tuim_errno = TUIM_EUNSUPPORTED_RT;
       goto error;
    }
    DBG(
@@ -761,7 +765,7 @@ RISC-V 32 relocations
       }
    }
 
-   tuim_error = TUIM_NO_ERROR;
+   tuim_errno = TUIM_NO_ERROR;
 
    return elf;
 
