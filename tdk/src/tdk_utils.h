@@ -42,24 +42,7 @@ static void* GrowPtrArray(void *dest, const void *src, size_t size){
 }
 
 static void* GrowStringArray(char **dest, const char *src){
-#if 1
    return GrowPtrArray(dest, src, strlen(src) + (size_t)1);
-#else
-   char **ptr;
-   size_t i, newsize;
-
-   i = (size_t)0;
-   while(dest[i] != NULL) ++i;
-   newsize = sizeof(char*) * (i + (size_t)2);
-   ptr = realloc(dest, newsize);
-   if(ptr != NULL){
-      ptr[i] = malloc(strlen(src) + (size_t)1);
-      if(ptr[i] != NULL) strcpy(ptr[i], src);
-      ptr[++i] = NULL;
-      return ptr;
-   }else
-      return dest;
-#endif
 }
 
 static void FreePtrArray(void *ptr){

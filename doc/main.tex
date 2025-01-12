@@ -130,7 +130,7 @@ and the system in here the execution takes place.
 % -----------------
 % SUBSECTION
 % -----------------
-\subsection{Application Binary Interface}
+\subsection{The file format}
 
 Tuim is designed to execute the
 Executable and Linkable Format (ELF),
@@ -188,19 +188,28 @@ int main(int argc, char **argv);
 % -------------------------------------
 % SECTION
 % -------------------------------------
-\section{Runtime libraries}
+\section{Application Binary Interface}
+
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{Runtime libraries}
 
 A program may request libraries as shared objects,
 if the shared object name has no slash then the loader find for it
 first on directories specified by the environment variable
 \texttt{LD\_LIBRARY\_PATH} and then in \texttt{<TUIM\_HOME>/lib}.
-The program may need the environment variable \texttt{LD\_LIBRARY\_PATH}
-set in order to allow the loader dinamically link with custom shared objects.
-The directory \texttt{<TUIM\_HOME>/lib} is reserved for Tuim
-and all shared object names are reserved for Tuim,
-this means that if a program request any shared object for purposes
-others that defined in this document than the environment variable
-\texttt{LD\_LIBRARY\_PATH} need to be used.
+
+All shared object names are reserved by this ABI,
+if a  need a shared object for porposes others than
+specified in this document then it need provide the shared object and
+the environment variable \texttt{LD\_LIBRARY\_PATH} need to be set
+after program loading.
+
+All global and weak symbols prefixed with \texttt{\_\_tuim\_}
+are reserved by this ABI,
+a conforming program shall not provide definitions for these symbols,
+even if it not request any library.
 
 % -----------------
 % SUBSECTION
@@ -232,6 +241,45 @@ without such specification.
 The \texttt{libc.so} shared object
 expose symbols from the C Standard Library, the latest version\cite{ISO9899}.
 Symbols exposed by this shared object are symbols reserved by the C standard.
+
+Several global and weak symbols
+are reserved by the C standard,
+a program requesting \texttt{libc.so}
+shall not provide definitions for these symbols.
+These are\footnote{%
+   Note that the nomeclature used by the C standard is
+   "identifier" instead of "symbol" as used by the ELF standard,
+   however all external identifiers are mapped by the compiler in
+   global or weak symbols.
+   For more details please check the C standard\cite{ISO9899}.
+}:
+
+\begin{itemize}
+   \item Symbols prefixed with an underscore (\texttt{\_}).
+   \item Symbols defined by the standard library (in hosted environment).
+   \item Symbols declared as reserved for the implementation
+   or future use by the standard library.
+   \item Symbols declared as potentially reserved.
+\end{itemize}
+
+\newpage
+% -------------------------------------
+% SECTION
+% -------------------------------------
+\section{Application Programing Interface}
+
+% -----------------
+% SUBSECTION
+% -----------------
+\subsection{C API}
+
+Blá blá Blá
+
+Standard Headers
+
+POSIX headers
+
+SDL headers
 
 \newpage
 % -------------------------------------

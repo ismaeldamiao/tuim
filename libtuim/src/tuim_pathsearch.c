@@ -47,16 +47,14 @@ STATIC char** path_search(uint8_t *soname){
    char **path;
    bool new_str;
    size_t len, count, soname_len, i, j;
-#if defined(TUIM_HOME)
-   const size_t predef_count = (size_t)1;
-#else
-   const size_t predef_count = (size_t)0;
-#endif // defined(TUIM_HOME)
+   char *tuim_home;
 
    count = (size_t)0;
    env = NULL;
 
    tmp0 = tmp1 = tmp2 = ascii(getenv("LD_LIBRARY_PATH"));
+   tuim_home = getenv("TUIM_HOME");
+   if(tuim_home != NULL) ++count;
 
    if(tmp0){
       len = (size_t)0;
@@ -81,7 +79,7 @@ STATIC char** path_search(uint8_t *soname){
    }
 
    soname_len = strlen(str(soname));
-   path = malloc((count + predef_count + 1) * sizeof(char*));
+   path = malloc((count + 1) * sizeof(char*));
    if(path == NULL){
       free(env);
       return NULL;
@@ -98,12 +96,13 @@ STATIC char** path_search(uint8_t *soname){
          ++i;
       }
    }
-#if defined(TUIM_HOME)
-   path[i] = malloc(sizeof(TUIM_HOME "/lib/") + soname_len + 1);
-   strcpy(path[i], TUIM_HOME "/lib/");
-   strcat(path[i], str(soname));
-   ++i;
-#endif // defined(TUIM_HOME)
+   if(tuim_home != NULL){
+      path[i] = malloc(strlen(tuim_home) + sizeof("/lib/") + soname_len + 1);
+      strcpy(path[i], tuim_home);
+      strcat(path[i], "/lib/");
+      strcat(path[i], str(soname));
+      ++i;
+   }
    path[i] = NULL;
 
    free(env);

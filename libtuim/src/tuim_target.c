@@ -23,71 +23,18 @@
 ***************************************************************************** */
 #include <stddef.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
 #include "include/tuim.h"
 #include "elf.h"
-
-#include "tuim_private.h"
-#include "tuim_utils.h"
-
 /* ------------------------------------
-   Function to free the memory alocated by tuim_loader.
+   Function to compile C source code.
+   TODO: Use libclang and LLVM-C libraries instead of system.
    * Part of tuim project.
-   * Last modified: December 7, 2024.
+   * Last modified: January 2, 2025.
 ------------------------------------ */
 
-void tuim_free(tuim_elf *elf){
-
-   return;
-
-   if(elf != NULL){
-      Elf_Ehdr *ehdr;
-      Elf_Shdr *phdr;
-      Elf_Shdr *shdr;
-
-      ehdr = elf->ehdr;
-      phdr = elf->phdr;
-      shdr = elf->shdr;
-
-      list_remove(&tuim_loaded, elf);
-
-      if(ehdr != NULL){
-         uint16_t e_shnum, e_phnum;
-
-         e_shnum = ELF_E_SHNUM(*ehdr);
-
-         if(phdr != NULL) free(elf->program);
-         free(elf->phdr);
-
-         if(shdr != NULL){
-            // Free dependencies
-            while(elf->sections[0]){
-               tuim_elf *dep;
-               dep = ((elf_list*)elf->sections[0])->elf;
-               list_remove((void*)elf->sections, dep);
-               tuim_free(dep);
-            }
-
-            // Free section that do not appeas in program memory image
-            for(uint16_t i = UINT16_C(1); i < e_shnum; ++i){
-               size_t sh_size;
-               uint32_t sh_flags;
-
-               sh_size = ELF_SH_SIZE(shdr[i]);
-               sh_flags = ELF_SH_FLAGS(shdr[i]);
-
-               if(!(sh_flags & SHF_ALLOC) && (sh_size != (size_t)0))
-                  free(elf->sections[i]);
-            }
-            free(elf->sections);
-            free(shdr);
-         }
-
-         free(elf->ehdr);
-      }
-      free(elf);
-   }
-   return;
+char* tuim_target(void){
+#if defined(__ARM_ARCH)
+   static char *target = "arm";
+#endif
+   return target;
 }

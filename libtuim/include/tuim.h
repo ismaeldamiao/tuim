@@ -35,6 +35,8 @@ Typedefs
 --- */
 
 typedef struct tuim_elf tuim_elf;
+typedef struct tuim_source tuim_source;
+typedef struct tuim_project tuim_project;
 
 /* ---
 Prototypes
@@ -54,6 +56,22 @@ void* tuim_findsymbol(const char *symbol, const tuim_elf *elf);
 
 /* Free the memory */
 void tuim_free(tuim_elf *elf);
+
+
+#define TUIM_LD_FILE 0x00000001U
+#define TUIM_LD_ELF  0x00000002U
+#define TUIM_LD_SHARED 0x00000004U
+tuim_elf* tuim_ld(void *input, const char *entry, char **libs, uint64_t args);
+
+#define TUIM_AS_FILE 0x00000001U
+#define TUIM_AS_STR  0x00000002U
+tuim_elf* tuim_as(void *input, const char *target, const char *include, uint64_t args);
+
+#define TUIM_CC_FILE 0x00000001U
+#define TUIM_CC_STR  0x00000002U
+tuim_elf* tuim_cc(void *input, const char *target, const char *include, uint64_t args);
+
+int tuim_printelf(const tuim_elf *elf, const char *name);
 
 #ifdef __cplusplus
 }
