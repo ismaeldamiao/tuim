@@ -20,39 +20,25 @@
    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
    IN THE SOFTWARE.
-***************************************************************************** */#include "tuim.h"
+***************************************************************************** */
 #include "elf.h"
+#include "tuim.h"
 #include "tuim_private.h"
 /* ------------------------------------
-   Function to load in memory a PIE ELF file.
+   Function to execute an already loaded ELF.
    * Part of tuim project.
-   * Last modified: January 12, 2025.
+   * Last modified: January 13, 2025.
 ------------------------------------ */
+static bool exec_success;
+static void exec_void(void *f);
+static int exec_main(void* main, int argc, char **argv);
 
 void* tuim_exec(unsigned type, unsigned flags, tuim_elf *elf, void *args){
-   pid_t	pid;
-   void *entry, *return_code;
-   static int c_ret;
-   size_t size;
-   bool return_int;
+   void *entry;
 
+   /* Only execute executables */
    if(ELF_E_TYPE(*((Elf_Ehdr*)(elf->ehdr))) != ET_EXEC){
       tuim_errno = TUIM_ENOTEXEC;
-      return NULL;
-   }
-
-   return_int = ((type == TUIM_EXEC_TNONE) || (type == TUIM_EXEC_TC));
-
-   /* Allocate a shared memory */
-   if(return_int)
-      size = sizeof(int);
-   else{
-      tuim_errno = TUIM_EUNKNOWNTYPE;
-      return NULL;
-   }
-   return_code = malloc(size);
-   if(return_code == NULL){
-      tuim_errno = TUIM_EMEMORY;
       return NULL;
    }
 
@@ -62,50 +48,97 @@ void* tuim_exec(unsigned type, unsigned flags, tuim_elf *elf, void *args){
       tuim_errno = TUIM_EENTRY;
       return NULL;
    }
-   if((type == TUIM_EXEC_TC) && (tuim_findsymbol("main", elf) != entry)){
-      tuim_errno = TUIM_EENTRY;
-      return NULL;
+
+   exec_success = false;
+   if(type == TUIM_EXEC_TNONE){
+      /* For the none type the entry point takes execution without
+         setting parameters and without expecting return values. */
+      exec_void(entry);
+      if(exec_success){
+         return entry;
+      }else{
+         return NULL;
+      }
+   }else if(type == TUIM_EXEC_TC){
+      /* For the C type the entry point is interpreted as the address
+         of C's main function.
+         int main(int argc, char **argv); */
+      typedef struct args { int argc; char **argv; } * args_p;
+      static int ret;
+
+      if(tuim_findsymbol("main", elf) != entry){
+         tuim_errno = TUIM_EENTRY;
+         return NULL;
+      }
+
+      ret =
+      exec_main(entry, ((args_p)args)->argc, ((args_p)args)->argv);
+
+      if(exec_success)
+         return &ret;
+      else{
+         return NULL;
+      }
    }
 
-   /* Create a separete process for the program execution */
+   /* Never return from here */
+   return NULL;
+}
+
+#if /* For systems in wich POSIX API is available ------------------------- */ \
+   defined (__unix__) || \
+   (defined (__APPLE__) && defined (__MACH__))
+/* Using POSIX API, fork this process and execute the program on the child. */
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+//#include <signal.h>
+static void exec_void(void *f){
+   pid_t	pid;
    pid = fork();
-   if(pid == (pid_t)0){
-      if(type == TUIM_EXEC_TNONE){
-         /* Simply jump to the entry point */
-         ((void(*)(void))entry)();
-         *((int*)return_code) = 0;
-      }else if(type == TUIM_EXEC_TC){
-         struct args { int argc; char **argv; } *args_;
-         void *exit;
-
-         /* Call C's main function */
-         args_ = args;
-         *((int*)return_code) =
-         ((int(*)(int,char**))entry)(args_->argc, args_->argv);
-
-         /* Call C's exit function */
-         exit = tuim_findsymbol("exit", elf);
-         if(exit != NULL){
-            ((void(*)(int))exit)(0);
-         }
-      }
-      /* Terminate this proccess, if alive */
-      exit(*((int*)return_code));
-   }else if(pid > (pid_t)0){
+   if(pid == (pid_t)0){ /* Child: The program execution process */
+      ((void(*)(void))f)();
+      exit(0); /* Terminate the proccess */
+   }else if(pid > (pid_t)0){ /* Parent: Wait until the program terminates */
       int status;
       waitpid(pid, &status, 0);
-      /* TODO: Handle possible errors */
-   }else{
-      tuim_errno = TUIM_EPROC;
-      return NULL;
+      if(WIFEXITED(status)){
+         exec_success = true;
+      }else{
+         /* TODO: Handle possible errors */
+      }
    }
-
-   if(return_int){
-      static int tmp;
-      tmp = *((int*)return_code);
-      free(return_code);
-      return_code = &tmp;
-   }
-
-   return return_code;
 }
+
+static int exec_main(void* main, int argc, char **argv){
+   pid_t	pid;
+   pid = fork();
+   if(pid == (pid_t)0){ /* Child: The program execution process */
+      exit(((int(*)(int,char**))main)(argc, argv));
+   }else if(pid > (pid_t)0){ /* Parent: Wait until the program terminates */
+      int status;
+      waitpid(pid, &status, 0);
+      if(WIFEXITED(status)){
+         exec_success = true;
+         return WEXITSTATUS(status);
+      }else{
+         /* TODO: Handle possible errors */
+      }
+   }
+
+   /* FIXME: Nerver return from here. */
+   return 127;
+}
+#else
+static void exec_void(void *f){
+   ((void(*)(void))f)();
+   exec_success = true;
+}
+
+static int exec_main(void* main, int argc, char **argv){
+   int ret = ((int(*)(int,char**))main)(argc, argv);
+   exec_success = true;
+   return ret;
+}
+#endif

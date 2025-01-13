@@ -4,6 +4,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+/* ------------------------------------
+   Public header file for the Tuim project.
+   * Last modified: January 13, 2025.
+------------------------------------ */
 
 /* Version */
 #define TUIM_VERSION_MAJOR 0
