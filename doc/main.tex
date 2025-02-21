@@ -20,10 +20,9 @@
 
 \documentclass[
    % -- opções da classe memoir --
-   article,                      % indica que é um artigo acadêmico
-   10pt,                         % tamanho da fonte.
+   12pt,                         % tamanho da fonte.
    openright,                    % capítulos começam em pág ímpar (insere página vazia caso preciso).
-   oneside,                      % para impressão em recto. Oposto a toweside.
+   twoside,                      % para impressão em recto. Oposto a twoside.
    a4paper,                      % tamanho do papel. 
    sumario = tradicional,        % Para indentar os sumários
    % -- opções do pacote babel --
@@ -80,33 +79,7 @@
 % ------------------------------------------------------------------------------
 % ELEMENTOS PRÉ-TEXTUAIS
 % ------------------------------------------------------------------------------
-\maketitle
-
-\begin{resumoumacoluna}
-   This documents describes the Application Binary Interface (ABI)
-   for Tuim Environments\cite{tuim},
-   the Command Line Interface (CLI)
-   to build and execute software in those invironments
-   and the Application Programing Interface (API)
-   to develop software for for those environment.
-
-   This document is in active development.
-   Its CLI and ABI might change any time without any notice.
-\end{resumoumacoluna}
-
-%\begin{resumoumacoluna}
-%   This document describes command line tools and standard libraries
-%   to build application for Tuim\cite{tuim} environments.
-%   The interface is designed to be cross-platform and
-%   to allow cross-compilation and interoperability betewen distinct
-%   languages.
-%   Generated code is designed to mach the System V ABI\cite{systemv},
-%   to generate position independent code and to allow binary portability,
-%   even betewen distincts operational systems.
-
-%   This document is in active development.
-%   Its CLI and ABI might change any time without any notice.
-%\end{resumoumacoluna}
+\imprimircapa
 
 \newpage
 \tableofcontents
@@ -116,10 +89,21 @@
 % ------------------------------------------------------------------------------
 \textual
 
+\part{User interface}
 % -------------------------------------
-% SECTION
+% CHAPTER
 % -------------------------------------
-\section{Introduction}
+\chapter{Introduction}
+
+This documents describes the Application Binary Interface (ABI)
+for Tuim Environments\cite{tuim},
+the Command Line Interface (CLI)
+to build and execute software in those invironments
+and the Application Programing Interface (API)
+to develop software for for those environment.
+
+This document is in active development.
+Its CLI and ABI might change any time without any notice.
 
 Tuim is designed to provide a way to execute the same binary in distincts systems
 without the need of recompilation or virtual machines.
@@ -127,10 +111,214 @@ A Tuim Environment consists of a user interface suitable to start the execution
 of softwares conforming to specifications in this document
 and the system in here the execution takes place.
 
+% -------------------------------------
+% CHAPTER
+% -------------------------------------
+\chapter{Tuim from command-line interface}
+
+\begin{verbatim}
+NAME
+   tuim -- execute ELF programs
+
+SYNOPSIS
+   tuim [-c] <program> [arg ...]
+
+DESCRIPTION
+   'tuim' is a command line utility to invoke the loader and execute a program.
+
+   The loader load <program> (or <TUIM_HOME>/bin/<program>.elf) and its
+   dependencies in memory and realocate the code. If no errors are encoutered
+   at loadtime then it places execution interpreting the entry point as the
+   address of a C function with prototype:
+      int main(int argc, char **argv);
+   <program> and all arguments following <program> are send as arguments of
+   main.
+   
+   The only default directory that the loader search for shared object
+   dependencies is <TUIM_HOME>/lib/.
+
+   If the executable program interpreter is /usr/bin/tuim then symbols that
+   begins with __tuim_ are resolved by the loader using internal definitions.
+
+OPTIONS
+   -c    If present, then the file to be loaded is
+         <TUIM_HOME>/bin/<program>.elf.
+\end{verbatim}
+
+% -------------------------------------
+% CHAPTER
+% -------------------------------------
+\chapter{Tuim from graphical user interface}
+
+\textbf{TODO}
+
+\part{Application Binary Interface}
+
+% -------------------------------------
+% CHAPTER
+% -------------------------------------
+\chapter{System calls}
+
+On Tuim environments a system call is a call to a routine
+that the symbol name begins with \texttt{\_\_tuim\_}.
+The loader resolve such symbols using internal definitions.
+Here such routines are described using C's notation with the
+calling convenctions from System V ABI.
+
+\newpage
 % -----------------
-% SUBSECTION
+% SECTION
 % -----------------
-\subsection{The file format}
+\section{allocate}
+
+\begin{verbatim}
+NAME
+   __tuim_open -- Open a file
+
+SYNOPSIS
+   uintptr_t __tuim_open(const char* file_path, int mode);
+
+DESCRIPTION
+   Request the allocation of at least size bytes of memory.
+
+   The address of the memory requested is a multiple of alignment.
+   Allowed values for alignment are unespecified.
+
+   If the first bit of prot is set then the memory requested must be executable,
+   the seccond bit for writable and the thrird for readable.
+
+   If the value of the file handle fh is distinct from __tuim_null then the
+   memory request must be a mapping of that file.
+
+RETURN VALUE
+   On success, returns address of the allocated memory.
+
+   On failure, returns __tuim_null.
+\end{verbatim}
+
+\newpage
+% -----------------
+% SECTION
+% -----------------
+\section{putc}
+
+\begin{verbatim}
+NAME
+   __tuim_puts -- Write a character on a file.
+
+SYNOPSIS
+   int __tuim_putc(int ch, void* stream);
+
+DESCRIPTION
+   Writes a character ch to the given output stream stream.
+
+   Internally, the character is converted to unsigned char just before being
+   written.
+
+RETURN VALUE
+   On success, returns the written character.
+
+   On failure, returns -1 and sets the error indicator (see ferror()) on stream. 
+ERRORS
+\end{verbatim}
+
+\newpage
+% -----------------
+% SECTION
+% -----------------
+\section{allocate}
+
+\begin{verbatim}
+NAME
+   __tuim_write -- Write on a file
+
+SYNOPSIS
+   int __tuim_write(uintptr_t fh, uintptr_t buf, size_t n);
+
+DESCRIPTION
+   Write sie bytes
+
+RETURN VALUE
+   On success, returns address of the allocated memory.
+
+   On failure, returns __tuim_null.
+\end{verbatim}
+
+\newpage
+% -----------------
+% SECTION
+% -----------------
+\section{allocate}
+
+\begin{verbatim}
+NAME
+   __tuim_allocate -- Allocate memory
+
+SYNOPSIS
+   uintptr_t __tuim_allocate(
+      uintptr_t addr, size_t size, size_t alignment, int prot, uintptr_t fh
+   );
+
+DESCRIPTION
+   Request the allocation of at least size bytes of memory.
+
+   The address of the memory requested is a multiple of alignment.
+   Allowed values for alignment are unespecified.
+
+   If the first bit of prot is set then the memory requested must be executable,
+   the seccond bit for writable and the thrird for readable.
+
+   If the value of the file handle fh is distinct from __tuim_null then the
+   memory request must be a mapping of that file.
+
+RETURN VALUE
+   On success, returns address of the allocated memory.
+
+   On failure, returns __tuim_null.
+\end{verbatim}
+
+\newpage
+% -----------------
+% SECTION
+% -----------------
+\section{free}
+
+\begin{verbatim}
+NAME
+   __tuim_deallocate -- Deallocate memory
+
+SYNOPSIS
+   void __tuim_deallocate(uintptr_t addr);
+
+DESCRIPTION
+   Deallocate the memory at address addr.
+\end{verbatim}
+
+\newpage
+% -----------------
+% SECTION
+% -----------------
+\section{exit}
+
+\begin{verbatim}
+NAME
+   __tuim_exit -- Terminate the program execution
+
+SYNOPSIS
+   [[noreturn]] void __tuim_exit(int exit_code);
+
+DESCRIPTION
+   Causes program termination.
+
+   __tuim_exit behaves like the standard C function exit, but do not call
+   any functions registered with atexit or at_quick_exit.
+\end{verbatim}
+
+
+% -------------------------------------
+% CHAPTER
+% -------------------------------------
+\chapter{The file format}
 
 Tuim is designed to execute the
 Executable and Linkable Format (ELF),
@@ -150,50 +338,15 @@ By convenction executable files uses the \texttt{.elf} extension,
 while \texttt{.so} is for shared objects and
 \texttt{.o} for relocatable files.
 
-% -----------------
-% SUBSECTION
-% -----------------
-\subsection{Tuim from command-line interface}
-
-For command-line environments Tuim can be used to load and execute
-a ELF via:
-
-\begin{lstlisting}[style=bash]
-tuim program.elf [arg ...]
-\end{lstlisting}
-
-Then the \texttt{program.elf} executable file is loaded,
-if the file request a library then the unique default directory
-where the loader find for it is
-the subdirectory \texttt{lib} at the directory from the
-environment variable \texttt{TUIM\_HOME}.
-If all dependencies are present and symbols are correctly
-relocated then execution takes place.
-
-The executable file's entry point is called like if it has
-the following signature in a C program.
-
-\begin{lstlisting}[style=c]
-int main(int argc, char **argv);
-\end{lstlisting}
-
-% -----------------
-% SUBSECTION
-% -----------------
-\subsection{Tuim from graphical user interface}
-
-\textbf{TODO}
-
-\newpage
 % -------------------------------------
+% CHAPTER
+% -------------------------------------
+\chapter{Standard libraries}
+
+% -----------------
 % SECTION
-% -------------------------------------
-\section{Application Binary Interface}
-
 % -----------------
-% SUBSECTION
-% -----------------
-\subsection{Runtime libraries}
+\section{Runtime libraries}
 
 A program may request libraries as shared objects,
 if the shared object name has no slash then the loader find for it
@@ -212,9 +365,9 @@ a conforming program shall not provide definitions for these symbols,
 even if it not request any library.
 
 % -----------------
-% SUBSECTION
+% SECTION
 % -----------------
-\subsection{Compiler runtime library}
+\section{Compiler runtime library}
 
 The \texttt{libcrt.so} shared object
 expose symbols from the Compiler Runtime Library,
@@ -234,9 +387,9 @@ TODO: Alternatively, I want to provide a CLang compatible ABI for processors
 without such specification.
 
 % -----------------
-% SUBSECTION
+% SECTION
 % -----------------
-\subsection{The C standard library}
+\section{The C standard library}
 
 The \texttt{libc.so} shared object
 expose symbols from the C Standard Library, the latest version\cite{ISO9899}.
@@ -262,16 +415,98 @@ These are\footnote{%
    \item Symbols declared as potentially reserved.
 \end{itemize}
 
-\newpage
 % -------------------------------------
-% SECTION
+% CHAPTER
 % -------------------------------------
-\section{Application Programing Interface}
+\chapter{Others libraries}
+
+\part{Application Programing Interface}
+
+% -------------------------------------
+% CHAPTER
+% -------------------------------------
+\chapter{Command line utilities}
+
+This chapter describe command utilities in order to build
+libraries and programs for Tuim Environments.
+The command line environment is a POSIX compliant shell,
+if installed under the Tuim Environment such shell can be initialied with
+the following command.
+
+\begin{lstlisting}[style=bash]
+tuim -c sh
+\end{lstlisting}
+
+Developers can use either the host shell, if POSIX compliant,
+or the Tuim Shell.
+The host shell is usually suitable when utilities are installed
+and executed in a OS dependent way.
+The Tuim Shell is suitable when utilities are build to run
+under the Tuim Environment.
 
 % -----------------
-% SUBSECTION
+% SECTION
 % -----------------
-\subsection{C API}
+\section{Environment variables}
+
+Some environment variables are useful when build for Tuim Environments.
+In order to setup such environment variables one can use the following
+command.
+
+\begin{lstlisting}[style=bash]
+. "${TUIM_HOME}/share/dev-<arch>.sh"
+\end{lstlisting}
+
+\noindent
+Where \texttt{<arch>} is the Instruction Set Architecture (ISA) to build for.
+If building for the same ISA that installed version of Tuim is build for then
+\texttt{<TUIM\_HOME>/share/llvm-host.sh} can be used instead.
+This must set the following environment variables:
+
+\begin{description}[style=multiline,leftmargin2cm]
+   \item[\texttt{LD}]
+   Set to \texttt{ld.lld}, in order to use LLVM's LLD linker.
+   \item[\texttt{LDFLAGS}]
+   Linker flags.
+   \item[\texttt{ASM}]
+   Set to \texttt{clang -cc1as}, in order to use LLVM's CLang assembler.
+   \item[\texttt{ASMFLAGS}]
+   Assembler compiler flags.
+   \item[\texttt{CC}]
+   Set to \texttt{clang -cc1}, in order to use LLVM's CLang C compiler.
+   \item[\texttt{CFLAGS}]
+   C compiler flags.
+\end{description}
+
+\noindent
+Also, \texttt{\$\{LD\} \$\{LDFLAGS\}} is aliased to \texttt{ld}, and so on.
+
+For example, the following commands can be used to assemble a
+\texttt{foo.asm} file, compile a \texttt{main.c}, link the result
+with the C standard library and then produce a \texttt{main.elf} executable.
+
+\begin{lstlisting}[style=bash]
+. "${TUIM_HOME}/share/dev-host.sh"
+as -o foo.o foo.asm
+cc -o main.o main.c
+ld -o main.elf -e main -l c foo.o main.o
+\end{lstlisting}
+
+% -----------------
+% SECTION
+% -----------------
+\section{CMake}
+
+\newpage
+% -------------------------------------
+% CHAPTER
+% -------------------------------------
+\chapter{Standard libraries}
+
+% -----------------
+% SECTION
+% -----------------
+\section{C API}
 
 Blá blá Blá
 
@@ -283,17 +518,17 @@ SDL headers
 
 \newpage
 % -------------------------------------
-% SECTION
+% CHAPTER
 % -------------------------------------
-\section{Tuim Developer Kit}
+\chapter{Tuim Developer Kit}
 
 The Tuim Developer Kit is a set of tools designed to write program for Tuim
 and to allow language interoperability.
 
 % -----------------
-% SUBSECTION
+% SECTION
 % -----------------
-\subsection{Linker}
+\section{Linker}
 
 \noindent NAME
 
@@ -335,9 +570,9 @@ it outputs executables or a shared objects.
 \end{description}
 
 % -----------------
-% SUBSECTION
+% SECTION
 % -----------------
-\subsection{Assembler}
+\section{Assembler}
 
 \noindent NAME
 
@@ -370,9 +605,9 @@ it outputs relocatable files.
 \end{description}
 
 % -----------------
-% SUBSECTION
+% SECTION
 % -----------------
-\subsection{C Compiler}
+\section{C Compiler}
 
 \noindent NAME
 
@@ -408,9 +643,9 @@ it outputs relocatable files.
 \end{description}
 
 % -----------------
-% SUBSECTION
+% SECTION
 % -----------------
-\subsection{Build system}
+\section{Build system}
 
 \noindent NAME
 
@@ -439,9 +674,9 @@ executables and shared objects from multiple source files.
 \end{description}
 
 % -----------------
-% SUBSECTION
+% SECTION
 % -----------------
-\subsection{Configuration file}
+\section{Configuration file}
 
 Configuration files are used to describe how source code are assembled,
 compiled and linked to generate a executable or shared object.
@@ -504,9 +739,9 @@ Allowed targets are
 \end{itemize}
 
 % -----------------
-% SUBSECTION
+% SECTION
 % -----------------
-\subsection{Example}
+\section{Example}
 
 Consider the following project.
 

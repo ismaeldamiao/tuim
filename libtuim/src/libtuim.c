@@ -1,7 +1,0 @@
-#include "tuim_error.c"
-#include "tuim_loader.c"
-#include "tuim_getentry.c"
-#include "tuim_findsymbol.c"
-#include "tuim_free.c"
-#include "tuim_target.c"
-#include "tuim_exec.c"

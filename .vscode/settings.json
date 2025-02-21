@@ -14,6 +14,7 @@
    "clangd.fallbackFlags": [
       "--language=c",
       "-std=c23",
-      "-I${workspaceFolder}/libtuim/src/include",
+      "-I",
+      "${workspaceFolder}/libraries/include",
    ]
 }

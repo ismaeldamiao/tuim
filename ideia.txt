@@ -1,0 +1,10 @@
+tuim install java
+tuim run java
+tuim remove java
+
+tuim build .
+tuim run bin/inkscape.elf
+tuim install .
+tuim run inkscape 
+
+tuim run -m M02 bin/edo.elf 0.01
