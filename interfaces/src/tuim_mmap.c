@@ -36,6 +36,8 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#elif defined(_WIN32)
+#include <Windows.h>
 #else
 #error Unknown target OS
 #endif /* defined(_POSIX_C_SOURCE) */
@@ -84,6 +86,11 @@ int tuim_mmap(const uint8_t *buf, void *structure){
       if(*program == MAP_FAILED){
          return TUIM_ENOMEM;
       }
+#elif defined(_WIN32)
+      *program = VirtualAlloc(NULL, *sz, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+      if(*program == NULL){
+         return TUIM_ENOMEM;
+      }
 #else
 #error Unknown target OS
 #endif /* defined(_POSIX_C_SOURCE) */
@@ -117,6 +124,21 @@ int tuim_mmap(const uint8_t *buf, void *structure){
             if(phdr->p_flags & PF_R) prot |= PROT_READ;
             mprotect(segment, phdr->p_memsz, prot);
          }
+#elif defined(_WIN32)
+         DWORD oldProtect;
+         if(phdr->p_flags & PF_X) {
+            if(!VirtualProtect(segment, phdr->p_memsz, PAGE_EXECUTE_READ, &oldProtect)) {
+               return TUIM_ENOMEM;
+            }
+         } else if(phdr->p_flags & PF_W) {
+            if(!VirtualProtect(segment, phdr->p_memsz, PAGE_READWRITE, &oldProtect)) {
+               return TUIM_ENOMEM;
+            }
+         } else if(phdr->p_flags & PF_R) {
+            if(!VirtualProtect(segment, phdr->p_memsz, PAGE_READONLY, &oldProtect)) {
+               return TUIM_ENOMEM;
+            }
+         }
 #else
 #error Unknown target OS
 #endif /* defined(_POSIX_C_SOURCE) */
@@ -140,7 +162,7 @@ int tuim_mmap(const uint8_t *buf, void *structure){
       }
 
       fstat(fd, &s);
-      file->sz = s.st_size + sizeof(uint64_t);
+      file->sz = s.st_size;
       {
          off_t offset = (off_t)0;
          file->obj = mmap(
@@ -152,6 +174,39 @@ int tuim_mmap(const uint8_t *buf, void *structure){
          }
       }
       close(fd);
+#elif defined(_WIN32)
+      struct file_s *file = structure;
+      HANDLE hFile;
+      LARGE_INTEGER fileSize;
+
+      hFile = CreateFileA(string(buf), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+      if(hFile == INVALID_HANDLE_VALUE){
+         return TUIM_ENOENT;
+      }
+
+      if(GetFileSizeEx(hFile, &fileSize) == 0){
+         CloseHandle(hFile);
+         return TUIM_ENOENT;
+      }
+
+      file->sz = fileSize.QuadPart;
+      {
+         void* mapping = CreateFileMappingA(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+         if(mapping == NULL){
+            CloseHandle(hFile);
+            return TUIM_ENOMEM;
+         }
+
+         file->obj = MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0);
+         if(file->obj == NULL){
+            CloseHandle(hFile);
+            CloseHandle(mapping);
+            return TUIM_ENOMEM;
+         }
+
+         CloseHandle(mapping);
+      }
+      CloseHandle(hFile);
 #else
 #error Unknown target OS
 #endif /* defined(_POSIX_C_SOURCE) */

@@ -6,4 +6,4 @@
 . "${TUIM_HOME}/share/env-arm.sh"
 
 cc -o tmp/main.o src/main.c
-ld -e main -o bin/main.elf -l c tmp/main.o
+ld -e main -o bin/ola.elf -l c tmp/main.o

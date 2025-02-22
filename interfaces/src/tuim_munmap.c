@@ -40,6 +40,11 @@ void tuim_munmap(struct file_s *file, struct image_s *image){
       munmap(file->obj, file->sz);
    if(image != NULL)
       munmap(image->program, image->sz);
+#elif defined(_WIN32)
+   if(file != NULL)
+      UnmapViewOfFile(file->obj);
+   if(image != NULL)
+      VirtualFree(image->program, 0, MEM_RELEASE);
 #else
 #error Unknown target OS
 #endif /* defined(_POSIX_C_SOURCE) */

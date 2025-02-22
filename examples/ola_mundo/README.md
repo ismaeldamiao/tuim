@@ -1,46 +1,44 @@
 # Olá Mundo!
 
 This program prints "Ola Mundo!" on stadard output.
-The main program is implemented in C,
-it call the function `puts`.
-`puts` is implemented using the `__tuim_fpuc` system call.
 
-Features:
-
-* The program is self contained, i.e., have no external dependencies.
-* Test executable loading.
-* Test shared object loading.
-* Test realocations.
-* Test a system call.
-* Test the command line tools for developers.
-* Test the CMake build.
+Dependency:
+* `libc.so` -- The C Standard Library.
 
 ## Building
 
-In order to build you need `ld.lld` and `clang` commands
-and need to setup the environment:
+> [!NOTE]
+> This tutorial assume that the development environment is set as in
+> the codumentation of the Tuim project.
+
+Prepare the environment:
 
 ```sh
 . "${TUIM_HOME}/share/env-host.sh"
+
 mkdir tmp
-mkdir lib
 mkdir bin
 ```
 
-You can the following command to build program;
+Build the program:
 
 ```sh
-cc -E src/puts.S | as -o tmp/puts.o -
 cc -o tmp/main.o src/main.c
-ld --shared -o lib/libputs.so tmp/puts.o
-ld -e main -o bin/main.elf -L lib/ -l puts tmp/main.o
+ld -e main -o bin/ola.elf -l c tmp/main.o
 ```
 
-## Executing
-
-Since the executable is requesting a custom shared object
-the environment must be prepared before execution.
+Execute it:
 
 ```sh
-LD_LIBRARY_PATH=./lib: tuim bin/main.elf
+tuim run bin/ola.elf
 ```
+
+## Donations
+
+Did you like the project? Make a donation so that I can continue working on it.
+
+- **GitHub Sponsors**: https://github.com/sponsors/ismaeldamiao
+
+- **PayPal**: <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D66EM3DGU35EE>.
+
+- **PIX**: `ismaellxd@gmail.com`.
