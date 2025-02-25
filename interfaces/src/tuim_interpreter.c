@@ -296,7 +296,7 @@ static void tuim_GetDep(uint8_t **obj_name, elf_s *elf){
       /* ------------------------------------
       AARCH64
       ------------------------------------ */
-      #error "Not implemented yet."
+      #include "aarch64.c"
    #elif __ARM_ARCH <= 7
       /* ------------------------------------
       AARCH32

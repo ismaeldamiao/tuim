@@ -10,6 +10,13 @@ mkdir bin
 clang -o bin/tuim -D _POSIX_C_SOURCE=200809L src/main.c
 ```
 
+On Windows you can build using:
+
+```sh
+md bin
+cl src/main.c /link /out:bin/tuim.exe
+```
+
 ## Donations
 
 Did you like the project? Make a donation so that I can continue working on it.
