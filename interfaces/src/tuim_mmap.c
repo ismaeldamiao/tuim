@@ -23,6 +23,7 @@
 ***************************************************************************** */
 #include "tuim.h"
 #include "main.h"
+#include <stdlib.h>
 /* ------------------------------------
    This function map the a ELF file in the process virtual address space
    or load the content of a already loaded file in the memory.
@@ -76,7 +77,7 @@ int tuim_mmap(const uint8_t *buf, void *structure){
 
       /* Allocate memory for the program image */
 #if defined(_POSIX_C_SOURCE)
-      *program = mmap(
+      /**program = mmap(
          NULL,
          *sz,
          PROT_READ | PROT_WRITE | PROT_EXEC,
@@ -85,7 +86,12 @@ int tuim_mmap(const uint8_t *buf, void *structure){
       );
       if(*program == MAP_FAILED){
          return TUIM_ENOMEM;
-      }
+      }*/
+   if(posix_memalign(
+      (void*)program, sysconf(_SC_PAGESIZE), *sz
+   ) != 0){
+      return TUIM_ENOMEM;
+   };
 #elif defined(_WIN32)
       *program = VirtualAlloc(NULL, *sz, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
       if(*program == NULL){
