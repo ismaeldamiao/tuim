@@ -23,12 +23,11 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        # os: [ubuntu-latest, windows-latest, macos-latest]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         c_compiler: [gcc, clang, cl]
         include:
-          #- os: windows-latest
-          #  c_compiler: cl
+          - os: windows-latest
+            c_compiler: cl
           - os: ubuntu-latest
             c_compiler: gcc
           - os: ubuntu-latest
@@ -38,10 +37,10 @@ jobs:
           - os: macos-latest
             c_compiler: clang
         exclude:
-          #- os: windows-latest
-          #  c_compiler: gcc
-          #- os: windows-latest
-          #  c_compiler: clang
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
           - os: ubuntu-latest
             c_compiler: cl
           - os: macos-latest
@@ -53,30 +52,18 @@ jobs:
       shell: bash
       working-directory: ${{ github.workspace }}
       run: |
+        cd interfaces
+        mkdir bin
         if [ "$RUNNER_OS" == "Linux" ]; then
           export CC=${{ matrix.c_compiler }}
-          sh scripts/build.sh || exit $?
-          zip -r build.zip .build
+          exec ${CC} -o bin/tuim -D _POSIX_C_SOURCE=200809L src/main.c
         elif [ "$RUNNER_OS" == "Windows" ]; then
-          cmake \
-            -B .build \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          cmake --build .build
+          exec ${CC} src/main.c /link /out:bin/tuim.exe
         elif [ "$RUNNER_OS" == "macOS" ]; then
-          cmake \
-            -B .build \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          cmake --build .build
-          zip -r build.zip .build
-        else
-          cmake \
-            -B .build \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          cmake --build .build
-          jar -cfM build.zip .build
+          exec ${CC} -o bin/tuim -D _POSIX_C_SOURCE=200809L src/main.c
         fi
-    - name: Archive output
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-${{ matrix.os }}-${{ matrix.c_compiler }}
-        path: ${{ github.workspace }}/build.zip
+#    - name: Archive output
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: build-${{ matrix.os }}-${{ matrix.c_compiler }}
+#        path: ${{ github.workspace }}/build.zip
