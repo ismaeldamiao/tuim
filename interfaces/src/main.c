@@ -43,7 +43,7 @@ int main(int argc, char **argv){
    /* Validate arguments. */
    if(strcmp(argv[1], "run") == 0){
       if((argv[2][0] == '-') && (argv[2][1] == 'm'))
-         tuim_errno = tuim_run(argv[2], argv + 3);
+         tuim_errno = tuim_run(argv[3], argv + 4);
       else
          tuim_errno = tuim_run(NULL, argv + 2);
    }else if(strcmp(argv[1], "build") == 0){

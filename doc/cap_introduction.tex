@@ -1,0 +1,46 @@
+\chapter{Introduction}
+
+This document describe the usage of the Tuim's ELF interpreter
+and the Application Binary Interface (ABI) that conforming programs and libraries
+must follow in order to interoperate.
+
+\section{How it works}
+
+Supose a executable \texttt{ola.elf} that want to print on the terminal
+the message
+"Ola mundo!", it request such service (write some bytes on terminal)
+to the execution environment by calling the function \texttt{puts}.
+The executable \texttt{ola.elf} do not know how \texttt{puts} is implemented but
+it know that it's implemented in the library \texttt{libc.so}.
+If the execution environment have a \texttt{libc.so} library then the function
+\texttt{puts} can be sucessfully called by the executable and the message
+"Ola mundo!" can be written to the terminal.
+
+Since there is no Operational System (OS) dependent code in the executable
+\texttt{ola.elf} then \textbf{any} OS that understand instructions in such executable
+can execute it natively, without the need of recompilation or virtualization.
+Of course OS dependent instruction can be found in the library \texttt{libc.so},
+therefore any OS need to have its own compilation of \texttt{libc.so}.
+
+This is how a executable can be "portable" in the sence that more than one
+OS can execute it. Some libraries also can be "portable" but a lot of libraries
+need to have OS dependent instructions.
+
+\section{Object files}
+
+The Executable and Linking Format (ELF) is the object file format used
+by the Tuim project, specification for those files can be found in
+chapters 4 and 5 of System V ABI\cite{sysv} base document.
+Tuim only use files with \texttt{EI\_OSABI} field of the ELF header equals
+to \texttt{ELFOSABI\_NONE},
+this means that all operating system-specific semantics
+allowed by the document are explicitily ignored,
+however processor-specific semantics are handled by the Tuim project.
+
+\section{Interpreter}
+
+The ELF Interpreter used by the Tuim project is the software that
+parse ELF files in order to load its instructions on computer's memory.
+The Interpreter only can load (and relocate) Position Independent Code (PIC),
+as a consequece all virtual addresses on both executables and shared objects
+are treated as offsets from the base address.

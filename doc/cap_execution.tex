@@ -1,0 +1,57 @@
+\chapter{Execution Environment}
+
+The Tuim's \texttt{run} command is the command used to pass a program
+to the Interpreter, then the Interpreter prepare all for execution and
+the \texttt{run} command start the execution of the program.
+
+The correctness of \texttt{run} and Interpreter's
+work is constrained to the correct
+environment configuration.
+The environment variable \texttt{TUIM\_HOME}
+shall holds the directory path where Tuim is installed.
+When Tuim is used to run a program named \texttt{prog} then it find
+for the executable placed at \texttt{bin/prog.elf} inside \texttt{TUIM\_HOME}.
+If the machine that must run the program is the host machine
+then the Interpreter find for libraries inside the subdirectory
+\texttt{lib} of \texttt{TUIM\_HOME},
+otherwise, if is a machine named \texttt{m} that must run the program then
+the Tuim first find for another implementation of the Interpreter
+in the library \texttt{lib/libtuim-m.so} and that Interpreter find for libraries
+inside \textt{lib/m} subdirectory.
+
+\section{Executing from command line}
+
+\subsubsection*{SYNOPSIS}
+
+\begin{lstlisting}[style=bash]
+tuim run [-m machine] <program|executable> [arguments...]
+\end{lstlisting}
+
+\subsubsection*{DESCRIPTION}
+
+Execute the Tuim's \texttt{run} command,
+optionally using \texttt{machine} as machine,
+using \texttt{program} as program's name,
+if such name contains slashes
+it is interpreted as the a \texttt{executable} path.
+
+\section{Executing from C code}
+
+\subsubsection*{SYNOPSIS}
+
+\begin{lstlisting}[style=c]
+#include <tuim.h>
+
+int tuim_run(const char *machine, char **argv);
+\end{lstlisting}
+
+\subsubsection*{DESCRIPTION}
+
+The function \texttt{tuim\_run} execute the Tuim's \texttt{run} command.
+If the pointer \texttt{machine} is non-null it
+uses the null-terminated string pointed to by
+\texttt{machine} as machine's name.
+It uses the null-terminated string pointed to by
+\texttt{argv[0]} as program's name,
+if such string contains slashes
+it is interpreted as the a executable path.
