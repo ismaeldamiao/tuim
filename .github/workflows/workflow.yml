@@ -10,6 +10,7 @@ on:
 
 jobs:
   posix:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -26,6 +27,7 @@ jobs:
           export CC=${{ matrix.c_compiler }}
           exec ${CC} -o bin/tuim -D _POSIX_C_SOURCE=200809L src/main.c
   windows:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         arch:
