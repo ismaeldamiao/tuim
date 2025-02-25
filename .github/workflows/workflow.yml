@@ -24,13 +24,36 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: windows-latest
         arch:
           - amd64
           - amd64_x86
           - amd64_arm64
+        os: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Enable Developer Command Prompt (amd64)
+        uses: ./
+        with:
+          arch: amd64
+      - name: Compile and run some C code (amd64)
+        shell: cmd
+        run: |
+          cl.exe hello.c
+          hello.exe
+      - name: Enable Developer Command Prompt (amd64_x86)
+        uses: ./
+        with:
+          arch: amd64_x86
+      - name: Compile and run some C code (x86)
+        shell: cmd
+        run: |
+          cl.exe hello.c
+          hello.exe
+      - name: Enable Developer Command Prompt (amd64_arm)
+        uses: ./
+        with:
+          arch: amd64_arm
+      - name: Compile some C code
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: ${{ matrix.arch }}
