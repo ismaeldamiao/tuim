@@ -20,15 +20,15 @@ jobs:
           export CC=${{ matrix.c_compiler }}
           exec ${CC} -o bin/tuim -D _POSIX_C_SOURCE=200809L src/main.c
   windows:
-    runs-on: ${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: windows-latest
         arch:
           - amd64
           - amd64_x86
           - amd64_arm64
-        os: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ilammy/msvc-dev-cmd@v1
