@@ -72,6 +72,12 @@ typedef int bool;
 extern uint8_t *tuim_env[];
 extern size_t tuim_ld_library_path_len;
 
+#if defined(_M_X64)
+#define __x86_64__ 1
+#elif defined(_M_IX86)
+#define __i386__
+#endif
+
 #if   (defined(__riscv) && (__riscv_xlen == 64)) \
    || (defined(__ARM_ARCH) && (__ARM_ARCH >= 8)) \
    || defined(__x86_64__)
