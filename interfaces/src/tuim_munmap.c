@@ -30,6 +30,8 @@
 
 #if defined(_POSIX_C_SOURCE)
 #include <sys/mman.h>
+#elif defined(_WIN32)
+#include <Windows.h>
 #else
 #error Unknown target OS
 #endif /* defined(_POSIX_C_SOURCE) */
