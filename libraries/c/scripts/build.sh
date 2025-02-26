@@ -1,11 +1,16 @@
 #!/usr/bin/env sh
 
+# ${1} architecture
+# ${2} OS
+
 [ ! -d "tmp" ] && { mkdir "tmp" || exit $?; }
 [ ! -d "lib" ] && { mkdir "lib" || exit $?; }
 
-. "${TUIM_HOME}/share/dev-aarch32.sh"
+. "${TUIM_HOME}/share/dev-${1}.sh"
 
-as -o tmp/aarch32-linux.o src/aarch32-linux.asm
+if [ "${2}" = "linux" ]; then
+   as -o tmp/systemcall.o              src/${1}-linux.asm
+fi
 
 # stdio
 cc -I ./include -o tmp/puts.o          src/stdio/puts.c

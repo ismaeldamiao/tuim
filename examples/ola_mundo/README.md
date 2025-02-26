@@ -33,6 +33,12 @@ Execute it:
 tuim run bin/ola.elf
 ```
 
+To build for distincts processors use:
+
+```sh
+sh scripts/build-all.sh
+```
+
 ## Donations
 
 Did you like the project? Make a donation so that I can continue working on it.

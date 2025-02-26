@@ -87,11 +87,11 @@ int tuim_mmap(const uint8_t *buf, void *structure){
       if(*program == MAP_FAILED){
          return TUIM_ENOMEM;
       }*/
-   if(posix_memalign(
-      (void*)program, sysconf(_SC_PAGESIZE), *sz
-   ) != 0){
-      return TUIM_ENOMEM;
-   };
+      if(posix_memalign(
+         (void*)program, sysconf(_SC_PAGESIZE), *sz
+      ) != 0){
+         return TUIM_ENOMEM;
+      };
 #elif defined(_WIN32)
       *program = VirtualAlloc(NULL, *sz, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
       if(*program == NULL){

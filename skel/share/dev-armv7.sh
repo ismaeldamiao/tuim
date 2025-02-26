@@ -17,18 +17,19 @@ alias ld="${LD} ${LDFLAGS}"
 
 # Assembler
 export ASM="clang -cc1as"
-export ASMFLAGS="-triple armv4t-unknown-unknown-eabi \
+export ASMFLAGS="-triple armv7-unknown-unknown-eabi \
    -filetype obj \
    -mrelocation-model pic "
 alias as="${ASM} ${ASMFLAGS}"
 
 # C compiler
 export CC="clang -cc1"
-export CFLAGS="-triple armv4t-unknown-unknown-eabi \
+export CFLAGS="-triple armv7-unknown-unknown-eabi \
    -Wno-error=unused-command-line-argument \
    -std=c23 \
    -pedantic \
    -ffreestanding \
+   -flto \
    -pic-level 2 \
    -nostdsysteminc \
    -I '${TUIM_HOME}/include' \

@@ -34,6 +34,21 @@ and load its instructions on the computer's memory
 and have also a set of convenctions that executables and libraries need to
 follow in order to work together.
 
+## Get started
+
+In order to build and install a default setup for use
+the script [scripts/build.sh](scripts/build.sh),
+the first argument is the parent directory where Tuim must be installed,
+the second is your architecture,
+the third is the OS.
+
+For example:
+
+```sh
+sh scripts/build.sh "${HOME}" x86_64 linux
+sh scripts/build.sh "${PREFIX}/opt" armv7 linux
+```
+
 ## Repository structure
 
 *  **doc**:
