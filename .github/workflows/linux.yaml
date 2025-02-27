@@ -10,6 +10,8 @@ jobs:
         c_compiler: [gcc, clang]
     steps:
       - uses: actions/checkout@v4
+      - name: Install LLVM
+        run: apt-get install clang llvm lld
       - name: Build, Install and Test
         shell: sh
         working-directory: ${{ github.workspace }}
