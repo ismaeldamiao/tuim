@@ -36,11 +36,8 @@ static bool tuim_HaveCorrectAttributes(void *_ehdr, bool is_executable){
    uint8_t *e_ident = ehdr->e_ident;
 
    return (
-      (
-         (e_ident[EI_CLASS] == ELFCLASS32)
-         || (e_ident[EI_CLASS] == ELFCLASS64)
-      )
-      && (e_ident[EI_CLASS] == ELFDATA2LSB)
+      (e_ident[EI_CLASS] == ELFCLASS64)
+      && (e_ident[EI_DATA] == ELFDATA2LSB)
       && (e_ident[EI_OSABI] == ELFOSABI_NONE)
       && (
          ((ehdr->e_type == ET_EXEC) && is_executable)

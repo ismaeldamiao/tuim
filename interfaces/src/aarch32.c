@@ -40,7 +40,7 @@ static bool tuim_HaveCorrectAttributes(void *_ehdr, bool is_executable){
 #if defined(__ARM_BIG_ENDIAN)
       && (e_ident[EI_CLASS] == ELFDATA2MSB)
 #else
-      && (e_ident[EI_CLASS] == ELFDATA2LSB)
+      && (e_ident[EI_DATA] == ELFDATA2LSB)
 #endif
       && (e_ident[EI_OSABI] == ELFOSABI_NONE)
       && (

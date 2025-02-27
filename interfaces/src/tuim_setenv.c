@@ -32,7 +32,7 @@
 ------------------------------------ */
 
 uint8_t *tuim_env[2] = { };
-size_t tuim_ld_library_path_len = 0;
+size_t tuim_ld_library_path_len = SIZE_C(0);
 
 int tuim_setenv(int env, char *value){
 

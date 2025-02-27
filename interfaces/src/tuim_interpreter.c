@@ -55,8 +55,8 @@ int tuim_interpreter(uint8_t *file_path, elf_s **main_file){
    -------------------------------------------------------------------------- */
    {
       elf_s *father, *elf = NULL;
-      struct file_s file;
-      struct image_s image;
+      struct file_s file = { };
+      struct image_s image = { };
       elf_s **needed;
 
       file.name = file_path;
@@ -109,6 +109,8 @@ int tuim_interpreter(uint8_t *file_path, elf_s **main_file){
          tuim_errno = tuim_mmap(obj_path, &file);
          if(tuim_errno != TUIM_SUCCESS){
             if(tuim_errno == TUIM_ENOENT){
+               if(file.name == file_path)
+                  goto end_map_new_elf;
                goto begin_map_new_elf;
             }else if(tuim_errno != TUIM_ENOMEM){
                goto error;
@@ -119,17 +121,22 @@ int tuim_interpreter(uint8_t *file_path, elf_s **main_file){
          }
 
          /* I do only basic checks in order to validade the file. */
-         /* FIXME: If such errors occurs in the first file I need to
-            goto error;
-            --- I know this is easy but is a problem for other day */
-         if(!isELF(file.obj)){
+         if(!isELF(file.obj)){ // puts("I'm here :)");
             tuim_munmap(&file, NULL);
+            if(file.name == file_path){
+               tuim_errno = TUIM_ENOEXEC;
+               goto end_map_new_elf;
+            }
             goto begin_map_new_elf;
          }
          if(!tuim_HaveCorrectAttributes(file.obj, (elf == NULL))){
             /* FIXME: Is not the case that the first file
                is allways a executable. */
             tuim_munmap(&file, NULL);
+            if(file.name == file_path){
+               tuim_errno = TUIM_ENOEXEC;
+               goto end_map_new_elf;
+            }
             goto begin_map_new_elf;
          }
 
@@ -138,8 +145,14 @@ int tuim_interpreter(uint8_t *file_path, elf_s **main_file){
       } end_map_new_elf:
 
       if(file.obj == NULL){
-         fputs("ERROR: Can't find the object ", stderr);
-         fputs(string(file.name), stderr);
+         if(tuim_errno == TUIM_ENOENT){
+            fputs("ERROR: Can't find the object ", stderr);
+            fputs(string(file.name), stderr);
+         }else if(tuim_errno == TUIM_ENOEXEC){
+            fputs("ERROR: ", stderr);
+            fputs(string(file.name), stderr);
+            fputs(" is not a valid object", stderr);
+         }
          fputs("\n", stderr);
          goto error;
       }

@@ -38,10 +38,14 @@
 
 void tuim_munmap(struct file_s *file, struct image_s *image){
 #if defined(_POSIX_C_SOURCE)
-   if(file != NULL)
+   if(file != NULL){
       munmap(file->obj, file->sz);
-   if(image != NULL)
+      file->obj = NULL;
+   }
+   if(image != NULL){
       munmap(image->program, image->sz);
+      image->program = NULL;
+   }
 #elif defined(_WIN32)
    if(file != NULL)
       UnmapViewOfFile(file->obj);
