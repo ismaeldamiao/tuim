@@ -1,4 +1,4 @@
-name: Build and test
+name: Windows NT workflow
 on: [push, pull_request]
 
 jobs:

@@ -30,7 +30,7 @@
    * Last modified: February 21, 2025.
 ------------------------------------ */
 
-#define DEBUG 0
+#define DEBUG 1
 
 #if DEBUG
 #define DBG(str, ...) printf(str, __VA_ARGS__)
