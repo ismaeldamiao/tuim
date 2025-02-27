@@ -2,7 +2,7 @@ name: Build and test
 on: [push, pull_request]
 
 jobs:
-  posix:
+  linux:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -14,4 +14,4 @@ jobs:
         shell: sh
         working-directory: ${{ github.workspace }}
         run: |
-          . scripts/build.sh x86_64 linux
+          . scripts/build.sh "${HOME}" x86_64 linux
