@@ -11,8 +11,7 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
-echo ""
-echo "--- Test 1: examples/ola_mundo ---"
+printf "\n--- Test 1: examples/ola_mundo ---\n"
 tuim run examples/ola_mundo/bin/ola-${1}.elf || exit $?
 
 exit 0

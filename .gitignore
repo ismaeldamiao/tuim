@@ -7,6 +7,8 @@ tmp
 !.vscode
 !.github
 
+!examples/*/bin
+
 interpreter/src/linux
 interpreter/src/windows
 interpreter/src/android
