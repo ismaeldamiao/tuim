@@ -24,6 +24,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "tuim.h"
 /* ------------------------------------
    This is the command line front-end for the Tuim project.
@@ -35,14 +36,18 @@
 
 int main(int argc, char **argv){
    int tuim_errno;
+   char *tuim_home;
 
    if(argc < 2){
       return TUIM_EINVAL;
    }
 
-   //DBG("%s\n", getenv("TUIM_HOME"));
+   tuim_home = getenv("TUIM_HOME");
+   if(tuim_home == NULL){
+      fputs("WARNING: Environmet variable TUIM_HOME unset\n", stderr);
+   }
 
-   tuim_setenv(TUIM_HOME, getenv("TUIM_HOME"));
+   tuim_setenv(TUIM_HOME, tuim_home);
    tuim_setenv(LD_LIBRARY_PATH, getenv("LD_LIBRARY_PATH"));
 
    /* Validate arguments. */
@@ -57,6 +62,11 @@ int main(int argc, char **argv){
       tuim_errno = tuim_install(argv + 2);
    }else if(strcmp(argv[1], "remove") == 0){
       tuim_errno = tuim_remove(argv + 2);
+   }else{
+      fputs("Unknown argument ", stderr);
+      fputs(argv[1], stderr);
+      fputs("\n", stderr);
+      tuim_errno = TUIM_EINVAL;
    }
 
    return tuim_errno;

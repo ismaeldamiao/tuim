@@ -1,34 +1,35 @@
 #/usr/bin/env sh
 
-export TUIM_HOME="${1}/tuim"
-alias cc=${CC} ${CFLAGS}
+# -------------------------------------
+#  Script to build the command line interface for Tuim and all reference
+#  implementation of libraries.
+#  * Part of Tuim project
+#  * Last modified: February 27, 2025.
+# -------------------------------------
 
-if [ ! -d "${TUIM_HOME}" ]; then
-   echo "Creating the TUIM_HOME"
-   mkdir "${TUIM_HOME}"
-   mkdir "${TUIM_HOME}/bin"
-   mkdir "${TUIM_HOME}/lib"
-   cp -r skel/share "${TUIM_HOME}/share"
-   cp "skel/share/dev-${2}.sh" "${TUIM_HOME}/share/dev-host.sh"
+if [ $# -lt 2 ]; then
+  echo "Usage: ${0} <arquiteture> <kernel>"
+  exit 1
 fi
 
+if [ -z "${CC}" ]; then
+   echo "Warnning: Unknown host compiler, defaulting to clang."
+   export CC=clang
+fi
+
+alias cc=${CC} ${CFLAGS}
 
 echo "Building the Interpreter's command line interface and install it"
 cd interfaces
 [ ! -d "bin" ] && { mkdir "bin" || exit $?; }
-cc -o "${TUIM_HOME}/tuim" -D _POSIX_C_SOURCE=200809L src/main.c
-ln -sf "${TUIM_HOME}/tuim" "${HOME}/bin/tuim" # "install" the executable
+cc -o "bin/tuim" -D _POSIX_C_SOURCE=200809L src/main.c || exit $?
 cd ../
 
 
 echo "Building the C Standard Library"
 cd libraries/c
-. "${TUIM_HOME}/share/dev-host.sh"
-sh scripts/build.sh ${2} ${3}
-cp lib/libc.so "${TUIM_HOME}/lib/libc.so"
+. "../../skel/share/dev-${1}.sh"
+sh scripts/build.sh ${1} ${2} || exit $?
 cd ../../
 
-
-echo "Executing examples"
-cd examples/ola_mundo
-"${TUIM_HOME}/tuim" run bin/ola-${2}.elf
+exit 0

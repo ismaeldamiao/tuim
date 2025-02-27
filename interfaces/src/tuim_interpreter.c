@@ -21,6 +21,7 @@
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
    IN THE SOFTWARE.
 ***************************************************************************** */
+#include <stdio.h>
 #include "tuim.h"
 #include "main.h"
 /* ------------------------------------
@@ -137,6 +138,9 @@ int tuim_interpreter(uint8_t *file_path, elf_s **main_file){
       } end_map_new_elf:
 
       if(file.obj == NULL){
+         fputs("ERROR: Can't find the object ", stderr);
+         fputs(string(file.name), stderr);
+         fputs("\n", stderr);
          goto error;
       }
 
@@ -214,6 +218,9 @@ int tuim_interpreter(uint8_t *file_path, elf_s **main_file){
 
    error:
    tuim_free(*main_file);
+   if(tuim_errno == TUIM_ENOMEM){
+      fputs("ERROR: Not enough memory", stderr);
+   }
    return tuim_errno;
 }
 
