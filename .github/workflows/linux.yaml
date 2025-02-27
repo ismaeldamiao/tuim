@@ -18,5 +18,7 @@ jobs:
         run: |
           export CC="${{ matrix.c_compiler }}"
           sh scripts/build.sh x86_64 linux
-          sh scripts/install.sh /tmp
+          export TUIM_HOME=/opt/tuim
+          sudo sh scripts/install.sh $TUIM_HOME
+          sudo ln -sf $TUIM_HOME/tuim /usr/bin/tuim
           sh scripts/test.sh x86_64
