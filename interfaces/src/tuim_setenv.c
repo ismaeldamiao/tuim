@@ -36,7 +36,7 @@ size_t tuim_ld_library_path_len = 0;
 
 int tuim_setenv(int env, char *value){
 
-   if(env == LD_LIBRARY_PATH){
+   if((env == LD_LIBRARY_PATH) && (value != NULL)){
       tuim_ld_library_path_len = strlen(value);
       for(char *str = value; *str != '\0'; ++str){
          if((*str == ':') || (*str == ';')) *str = '\0', ++str;

@@ -9,7 +9,7 @@
 Build for Linux (any of):
 
 ```sh
-sh scripts/build-arm-linux.sh
+sh scripts/build.sh armv7 linux
 ```
 
 ## Donations

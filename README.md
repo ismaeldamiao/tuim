@@ -46,7 +46,7 @@ For example:
 
 ```sh
 sh scripts/build.sh "${HOME}" x86_64 linux
-sh scripts/build.sh "${PREFIX}/opt" armv7 linux
+CC=clang sh scripts/build.sh "${PREFIX}/opt" armv7 linux
 ```
 
 ## Repository structure

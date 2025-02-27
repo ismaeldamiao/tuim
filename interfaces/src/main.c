@@ -31,6 +31,7 @@
    * Last modified: February 21, 2025.
 ------------------------------------ */
 
+//#include "main.h"
 
 int main(int argc, char **argv){
    int tuim_errno;
@@ -38,6 +39,8 @@ int main(int argc, char **argv){
    if(argc < 2){
       return TUIM_EINVAL;
    }
+
+   //DBG("%s\n", getenv("TUIM_HOME"));
 
    tuim_setenv(TUIM_HOME, getenv("TUIM_HOME"));
    tuim_setenv(LD_LIBRARY_PATH, getenv("LD_LIBRARY_PATH"));

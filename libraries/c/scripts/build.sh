@@ -6,7 +6,9 @@
 [ ! -d "tmp" ] && { mkdir "tmp" || exit $?; }
 [ ! -d "lib" ] && { mkdir "lib" || exit $?; }
 
-. "${TUIM_HOME}/share/dev-${1}.sh"
+alias as="${ASM} ${ASMFLAGS}"
+alias cc="${CC} ${CFLAGS}"
+alias ld="${LD} ${LDFLAGS}"
 
 if [ "${2}" = "linux" ]; then
    as -o tmp/systemcall.o              src/${1}-linux.asm

@@ -2,29 +2,6 @@ name: Build and test
 on: [push, pull_request]
 
 jobs:
-  posix:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        c_compiler: [gcc, clang]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build, Install and Test
-        with:
-          os: ubuntu-latest
-        shell: sh
-        working-directory: ${{ github.workspace }}
-        run: |
-          . scripts/build.sh x86_64 linux
-      - name: Build, Install and Test
-        with:
-          os: macos-latest
-        shell: sh
-        working-directory: ${{ github.workspace }}
-        run: |
-          . scripts/build.sh aarch64 macos
   windows:
     runs-on: windows-latest
     strategy:
