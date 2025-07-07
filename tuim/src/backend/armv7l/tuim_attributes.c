@@ -1,0 +1,16 @@
+#include "../elf.h"
+#include "../tuim_backend.h"
+
+bool tuim_attributes(uint8_t *obj){
+   /* Arm v7 Architecture -- Little Endian
+      armv7l-unknown-none-eabi */
+   Elf32_Ehdr *ehdr = (void*)obj;
+   Elf32_Word flags;
+   if(obj[EI_DATA] != ELFDATA2LSB) return false;
+   if(obj[EI_CLASS] != ELFCLASS32) return false;
+   if(swap16(ehdr->e_machine) != EM_ARM) return false;
+   flags = swap32(ehdr->e_flags) & (
+      EF_ARM_EABI_VER5
+   );
+   return (bool)flags;
+}

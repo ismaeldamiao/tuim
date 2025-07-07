@@ -1,0 +1,169 @@
+\chapter{Introduction}
+
+The Tuim project aims to provide a cross platform
+Application Binary Interface (ABI).
+It can be used, for example, to produce applications that can be
+executed on different Oparational Systems (OS)
+without recompilation nor virtualization.
+
+The project was created with the aim of facilitating development for
+different systems,
+thus decreasing the effort and costs of producing cross-platform applications.
+When targeting Tuim developers are allowed to build a object code
+that is Operational System (OS) independent.
+Various programing languages can be used to target Tuim and distincts
+languages can interoperate, therefore developers can use their preferred language.
+No similar solutions without virtualization exists.
+
+% --------
+% SECTION
+% --------
+\section{Get started}
+
+Tuim is officially distributed only in source form under the terms of the
+MIT License.
+However builds from Tuim's author can be found at
+\url{https://www.patreon.com/ismaeldamiao}
+and OS developers are encouraged to distribute Tuim using
+standard package managers.
+
+The general steps to build and install Tuim are:
+
+\begin{enumerate}
+   \item Build a interface for the Interpreter
+
+   \begin{itemize}
+      \item
+         With a interface the target user can start applications by calling
+         the ELF Interpreter, procedure that load a application, prepare it
+         for execution and branch to it entry point.
+      \item
+         The simplest interface is the Application Programing Interface (API),
+         it's a C interface and can be used to build others kind of interfaces
+         or to embed Tuim on others projects.
+      \item
+         For command line shells there is the Command Line Interface (CLI),
+         some graphical shells may also use it.
+      \item
+         Some specific platforms may need a dedicated interface.
+   \end{itemize}
+
+   \item Install the interface
+
+   \begin{itemize}
+      \item
+         Such installation also define the place where files used by Tuim
+         are found, in some cases such place shall be the indicated by the
+         environment variable \texttt{TUIM\_HOME}.
+   \end{itemize}
+
+   \item Build and install libraries and applications
+
+   \begin{itemize}
+      \item
+         Libraries and utility applications can be distributed with Tuim
+         in order to minimize the work of a final user to set up Tuim,
+         see more in section \ref{section:libraries}.
+   \end{itemize}
+
+\end{enumerate}
+
+All source code from the Tuim project have build and installations scripts
+and this document describe the general use of these scripts.
+Of course, advanced developers (like OS developers)
+may adapt the compilation logic.
+
+You can get a copy of the source code at
+\url{https://github.com/ismaeldamiao/tuim.git}
+or may use the following command.
+
+\begin{lstlisting}[style=bash]
+gh repo clone ismaeldamiao/tuim
+\end{lstlisting}
+
+In order to proced with compilation you need
+the command line environment officially distributed for your OS,
+a C compiler to build interfaces and
+{\TeX} Live to build this documentation.
+To build libraries for Tuim
+you need the \texttt{tuim-dev.so} library and the CLI,
+where the "Chicken egg" problem states that you may need to build
+the \texttt{tuim-dev.so} library,
+in that case you need Lua\cite{lua}, LLVM\cite{llvm} and the
+\texttt{interfaces/scripts/tuim-build.lua} script.
+
+\subsection{Buildind the API}
+
+In order to build the API you need to compile the file
+\texttt{interfaces/src/tuim.c}.
+Also the header \texttt{interfaces/src/tuim.h}
+must be placed in your include directory.
+See bellow for more concrete cases of builds.
+
+\subsection{Buildind Interpreter's CLI for POSIX systems}
+
+In general, to build the CLI you need to execute the script
+\texttt{interfaces/scripts/build.sh}.
+The environment variable \texttt{CC} may be used to choose the C compiler,
+if not used then the script select standard POSIX compilers.
+
+A typical execution is:
+
+\begin{lstlisting}[style=bash]
+cd tuim/interfaces
+export CC=clang
+sh scripts/build.sh
+\end{lstlisting}
+
+On sucess this shall generate a file \texttt{tuim/interfaces/bin/tuim}
+that shall be placed in a directory in your \texttt{PATH}.
+
+\subsection{Buildind libraries}
+
+There are two classes of libraries,
+that contains portable and not portable code.
+To build libraries with portable code you need to navigate to the
+library directory and use following the command.
+
+\begin{lstlisting}[style=bash]
+tuim build src
+\end{lstlisting}
+
+This shall generate a \texttt{lib} directory with the library shared object.
+For non portable libraries the convection is that the code use standard macros
+in order to detect the target OS at compilation time
+and one of the following command can be used.
+
+\begin{lstlisting}[style=bash]
+tuim build -D __linux__=1 src # For Linux
+tuim build -D _WIN32=1 src # For NT-Windows
+\end{lstlisting}
+
+Generated shared objects shall be placed at \texttt{<TUIM\_HOME>/lib}.
+Note that if the \texttt{tuim build} command is not available
+you may use the \texttt{tuim-build} Lua script\footnote{%
+   At the moment, the Lua script is the only way since there is no
+   implementation for the \texttt{tuim-dev.so} library.
+}.
+
+Libraries from the Tuim project are found at:
+\begin{itemize}
+   \item \texttt{libraries/c} -- C Standard Library (non portable)
+\end{itemize}
+
+\subsection{Building documentation}
+
+The official documentation is written in {\LaTeX} and you can build it from the
+file \texttt{main.tex} in the \texttt{doc} directory from Tuim project's
+source tree.
+
+The following command can build the documentation
+using \texttt{latexmk}\cite{latexmk} if executed in the \texttt{doc} directory.
+
+\begin{lstlisting}[style=bash]
+latexmk -pdflatex -silent -quiet -f -g main.tex
+\end{lstlisting}
+
+This shall generate a \texttt{main.pdf} file.
+
+% EOF

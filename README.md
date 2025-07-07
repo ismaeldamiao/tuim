@@ -1,13 +1,35 @@
-<h1 align="center">The Tuim Project</h1>
+<h1 align="center">
+   <img src="www/assets/img/logo.jpg" alt="The Tuim Project" width="30%">
+   <br>The Tuim Project
+</h1>
 
 ![Crates.io License](https://img.shields.io/crates/l/MIT)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ismaeldamiao/tuim)
 ![GitHub Release](https://img.shields.io/github/v/release/ismaeldamiao/tuim)
 
 > [!CAUTION]
-> This library is in active development. Its API might change any time without any notice.
+> Tuim is a project in active development,
+> bellow the version 1.0 it is designed only for test purposes.
 
-## How it works
+## About Tuim
+
+The Tuim project aims to provide a cross platform
+Application Binary Interface (ABI).
+It can be used, for example, to produce applications that can be
+executed on Linux, MacOS and Windows without recompilation nor virtualization.
+
+## Introduction
+
+The project was created with the aim of facilitating development for
+different systems,
+thus decreasing the effort and costs of producing cross-platform applications.
+When targeting Tuim developers are allowed to build a object code
+that is Operational System (OS) independent.
+Various programing languages can be used to target Tuim and distincts
+languages can interoperate, therefore developers can use their preferred language.
+No similar solutions without virtualization exists.
+
+### How it works?
 
 Supose a executable `ola.elf` that want to print on the terminal the message
 "Ola mundo!", it request such service (write some bytes on terminal)
@@ -36,52 +58,19 @@ follow in order to work together.
 
 ## Get started
 
-In order to build and install a default setup for use
-the script [scripts/build.sh](scripts/build.sh),
-the first argument is the parent directory where Tuim must be installed,
-the second is your architecture,
-the third is the OS.
+You may refer to the [documentation](doc) to get instruction about how
+to build and install Tuim.
+Documentation is written in LaTeX,
+you can build it or buy a compiled PDF at
+<https://patreon.com/ismaeldamiao>.
 
-For example:
+## License
 
-```sh
-sh scripts/build.sh "${HOME}" x86_64 linux
-CC=clang sh scripts/build.sh "${PREFIX}/opt" armv7 linux
-```
+Tuim is released under the MIT License. See the **[LICENSE](LICENSE)** file for details.
 
-## Repository structure
+## Author
 
-*  **doc**:
-
-   The [doc](doc) directory contain code suitable to build the documentation.
-
-*  **interfaces**:
-
-   The [interfaces](interfaces) directory contain code suitable to build
-   user interfaces for the ELF interpreter,
-   allowing the execution of programs.
-
-*  **libraries**:
-
-   The [libraries](libraries) directory contain code suitable to build some,
-   but not all, libraries that can be requested by executables.
-
-*  **example**:
-
-   The [examples](examples) directory contain code suitable to do
-   some basic tests and to provide examples of how develop new programs.
-
-*  **skel**:
-
-   The [skel](skel) directory contain some utility files,
-   suitable for developers.
-
-## About the author
-
-My name is Ismael,
-I'm a brasilian physicist.
-You can read more about me at
-[GitHub Sponsors](https://github.com/sponsors/ismaeldamiao).
+Tuim was created by **[I. F. F. dos Santos](https://github.com/ismaeldamiao)**.
 
 ## Join the community
 

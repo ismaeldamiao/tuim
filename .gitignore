@@ -6,17 +6,3 @@ tmp
 !.gitignore
 !.vscode
 !.github
-
-!examples/*/bin
-
-interpreter/src/linux
-interpreter/src/windows
-interpreter/src/android
-
-libraries/adt.c
-libraries/stack
-libraries/queue
-libraries/graph
-libraries/list
-libraries/map
-libraries/tree

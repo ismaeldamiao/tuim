@@ -1,0 +1,229 @@
+\chapter{Execution Environment}
+
+The execution environment is used to start the execution of a application.
+When a application is requested to be executed it
+may request some service from libraries.
+The Tuim's ELF Interpreter is the component responsible for
+find and load the application and all libraries it request.
+
+Both application and libraries are stored in object codes,
+the format used is the Executable and Linking Format (ELF)
+-- see chapters 4 and 5 of System V ABI\cite{sysv} base document --,
+applications are stored in executables and libraries in shared objects.
+The Interpreter only are granted to sucessful load
+ELF files without non standard features, that is,
+operating system-specific semantics are ignored
+-- of course, processor-specific semantics are handled by the Interpreter.
+
+% --------
+% SECTION
+% --------
+\section{Interfaces for the Interpreter}
+
+% SUBSECTION
+\subsection{C API}
+
+The only official API is written for the C Programin Language\cite{ISO9899}.
+Identifier implemented in the library are exposed in the
+header \texttt{tuim.h}.
+
+The macros in the header \texttt{tuim.h} are:
+
+\begin{itemize}
+   \item \texttt{TUIM\_VERSION\_MAJOR}
+   \item \texttt{TUIM\_VERSION\_MINOR}
+   \item \texttt{TUIM\_HOME}
+   \item \texttt{LD\_LIBRARY\_PATH}
+\end{itemize}
+
+\subsubsection{The \texttt{tuim\_setenv} function}
+
+\subsubsection*{SYNOPSIS}
+
+\begin{lstlisting}[style=c]
+#include <tuim.h>
+
+int tuim_setenv(int env, char *value);
+\end{lstlisting}
+
+The \texttt{tuim\_setenv} function set to \texttt{value} a internal variable
+used by the Interpreter. \texttt{env} shall be any of \texttt{TUIM\_HOME}
+or \texttt{LD\_LIBRARY\_PATH} macros.
+
+\subsubsection{The \texttt{tuim\_run} function}
+
+\subsubsection*{SYNOPSIS}
+
+\begin{lstlisting}[style=c]
+#include <tuim.h>
+
+int tuim_run(const char *machine, const char *exec_path, char **argv);
+\end{lstlisting}
+
+\subsubsection*{DESCRIPTION}
+
+The \texttt{tuim\_run} function
+execute the application where executable path is pointed to by
+\texttt{exec\_path}, the application entry point is treated like if
+it is the address of a function with the signature, in C, given by
+
+\begin{lstlisting}[style=c]
+int main(int argc, char **argv);
+\end{lstlisting}
+
+Where \texttt{argc} is computed to be such that \texttt{argv[argc] == NULL}.
+
+If \texttt{machine} is \texttt{NULL}
+the Interperter find for libraries using environment variables,
+it find first on paths indicated by \texttt{LD\_LIBRARY\_PATH}
+and then in \texttt{<TUIM\_HOME>/lib}.
+
+If \texttt{machine} is not \texttt{NULL} the \texttt{tuim\_run} function
+find for a alternative implementation of itself in
+\texttt{<TUIM\_HOME>/opt/<machine>/tuim.so} shared object
+and the Interpreter find for libraries in
+\texttt{<TUIM\_HOME>/opt/<machine>/lib} directory.
+This can be used, for example,
+to execute the application in a virtual machine or in a external device.
+
+% SUBSECTION
+\subsection{CLI}
+
+The CLI is suitable for systems on that one can
+use a command line environment to request services.
+The reference implementation are made in C using the API previous described.
+
+\subsubsection{The \texttt{tuim} utility}
+
+\subsubsection*{NAME}
+
+\noindent
+\texttt{tuim} -- Create, manage and run applications and libraries.
+
+\subsubsection*{SYNOPSIS}
+
+\begin{lstlisting}[style=bash]
+tuim <command ...>
+\end{lstlisting}
+
+\subsubsection*{DESCRIPTION}
+
+The \texttt{tuim} utility is hight-level command-line interface.
+Commands are used with distincts purposes. The current available commands are:
+
+\begin{itemize}
+
+   \item \texttt{run [-m machine] <application|executable> [arguments...]}
+
+   The \texttt{run} command execute the \texttt{application}
+   or the application from the \texttt{executable},
+   if the application name contain one or more slashes
+   then it is interpreted as the executable path,
+   otherwise the executable path in supposed to be
+   \texttt{<TUIM\_HOME>/bin/application.elf}.
+   A machine can be used to choose the correct implementation of the
+   Interpreter for execute the application.
+   The utility behave like calling the C API as
+
+\begin{lstlisting}[style=c]
+// tuim run lua script.lua
+char *argv[] = { "lua", "script.lua", NULL };
+tuim_run(NULL, "<TUIM_HOME>/bin/lua.elf", argv);
+// tuim run -m riscv ./benchmark.elf
+char *argv[] = { "./benchmark.elf", NULL };
+tuim_run("riscv", "./benchmark.elf", argv);
+// tuim run -m x86_64 game
+char *argv[] = { "game", NULL };
+tuim_run("x86_64", "<TUIM_HOME>/opt/x86_64/bin/game.elf", argv);
+\end{lstlisting}
+
+   \item \texttt{build [--target arch] [-D name[=definition]] <directory>}
+
+   The \texttt{build} command build object code from source code
+   using the \texttt{<directory>/build.yaml} source tree specification.
+   The \texttt{-D} option is suitable for the control of languages that uses
+   the C preprocessor.
+   If the \texttt{--target} option is not used the command build object code
+   as best it can for the host architecture, otherwise it build object code
+   for the specified architecture.
+
+\end{itemize}
+
+% --------
+% SECTION
+% --------
+\section{Standard libraries}
+\label{section:libraries}
+
+% SUBSECTION
+\subsection{Compiler runtime library}
+
+\subsubsection*{NAME}
+
+\noindent
+\texttt{libcrt} -- Compiler Runtime Library
+
+\subsubsection*{SYNOPSIS}
+
+\noindent
+\texttt{libcrt.so}, \texttt{-l crt}
+
+\subsubsection*{DESCRIPTION}
+
+The \texttt{libcrt.so} shared object
+expose symbols from the Compiler Runtime Library,
+usually helper functions that the compiler need.
+Symbols exposed by this shared object
+begins with two underscores or an underscore followed by a capital letter.
+
+Some processor suplements provide a specification for the
+Compiler Runtime Library, in that case this is the library in the shared
+object \texttt{libcrt.so}.
+If the processor suplement do not provide such specification than
+is a undefined bahavior the explicit use of
+any symbol exposed by \texttt{libcrt.so} in source code,
+these symbols are reserved for the use of the compiler.
+
+\todo[inline]{%
+   TODO: Choose a better design for this library.
+}
+
+% SUBSECTION
+\subsection{The C standard library}
+
+\subsubsection*{NAME}
+
+\noindent
+\texttt{libc} -- C Standard Library
+
+\subsubsection*{SYNOPSIS}
+
+\noindent
+\texttt{libc.so}, \texttt{-l c}
+
+\subsubsection*{DESCRIPTION}
+
+The \texttt{libc.so} shared object
+expose symbols from the C Standard Library, the latest version\cite{ISO9899}.
+Symbols exposed by this shared object are symbols reserved by the C standard.
+
+Several global and weak symbols
+are reserved by the C standard,
+a program requesting \texttt{libc.so}
+shall not provide definitions for these symbols.
+These are\footnote{%
+   Note that the nomeclature used by the C standard is
+   "identifier" instead of "symbol" as used by the ELF standard,
+   however all external identifiers are mapped by the compiler in
+   global or weak symbols.
+   For more details please check the C standard\cite{ISO9899}.
+}:
+
+\begin{itemize}
+   \item Symbols prefixed with an underscore (\texttt{\_}).
+   \item Symbols defined by the standard library (in hosted environment).
+   \item Symbols declared as reserved for the implementation
+   or future use by the standard library.
+   \item Symbols declared as potentially reserved.
+\end{itemize}
+

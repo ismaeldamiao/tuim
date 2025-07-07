@@ -1,0 +1,92 @@
+%   Copyright (c) 2024-2025 I.F.F. dos SANTOS <ismaellxd@gmail.com>
+
+%   Permission is hereby granted, free of charge, to any person obtaining a copy 
+%   of this software and associated documentation files (the “Software”), to 
+%   deal in the Software without restriction, including without limitation the 
+%   rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
+%   sell copies of the Software, and to permit persons to whom the Software is 
+%   furnished to do so, subject to the following conditions:
+
+%   The above copyright notice and this permission notice shall be included in 
+%   all copies or substantial portions of the Software.
+
+%   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+%   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+%   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+%   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+%   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+%   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+%   IN THE SOFTWARE.
+
+\documentclass[
+   article,			               % indica que é um artigo acadêmico
+   % -- opções da classe memoir --
+   12pt,                         % tamanho da fonte.
+   oneside,                      % para impressão em recto. Oposto a twoside.
+   a4paper,                      % tamanho do papel. 
+   sumario = tradicional,        % Para indentar os sumários
+   % -- opções do pacote babel --
+   english,                      % idioma adicional para hifenização.
+   xcolor=table                  % Tabelas coloridadas.
+]{abntex2}
+% --------------------------------------
+% PACOTES
+% --------------------------------------
+\input{configurar_abntex.tex}
+\input{configurar_fontes.tex}
+\input{configurar_documento.tex}
+\input{configurar_code.tex}
+\input{configurar_hyper.tex}
+\input{configurar_utilidades.tex}
+
+
+% --------------------------------------
+% Informações de dados para CAPA e FOLHA DE ROSTO
+% --------------------------------------
+\titulo{%
+   The Tuim Project \\ \small{Version 0.2}%
+}
+\autor{%
+   I. F. F. dos{ }SANTOS\thanks{\href{mailto:ismaellxd@gmail.com}{ismaellxd@gmail.com}}%
+}
+\local{Maceió}
+\data{\today}
+
+\abstract{%
+   Loren Ipsum
+}
+
+\begin{document}
+\selectlanguage{english}
+% ------------------------------------------------------------------------------
+% ELEMENTOS PRÉ-TEXTUAIS
+% ------------------------------------------------------------------------------
+\maketitle
+
+\newpage
+\tableofcontents
+\newpage
+% ------------------------------------------------------------------------------
+% ELEMENTOS TEXTUAIS
+% ------------------------------------------------------------------------------
+\textual
+
+\input{textual/introduction.tex}
+\input{textual/abi.tex}
+\input{textual/implementation.tex}
+\input{textual/hello.tex}
+\input{textual/conclusion.tex}
+
+% ------------------------------------------------------------------------------
+% ELEMENTOS PÓS-TEXTUAIS
+% ------------------------------------------------------------------------------
+   \postextual
+   % ---------------------------------------------------------------------------
+   % Referências bibliográficas
+   % ---------------------------------------------------------------------------
+   \bibliography{references}
+   \apendices
+
+%\input{appendix_target.tex}
+
+\end{document}
