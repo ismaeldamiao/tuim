@@ -1,19 +1,35 @@
-# The Tuim's kernel Library
+# The Kernel Library
 
-Tuim's kernel library -- referenced at runtime by `libkernel.so` --
+Tuim's Kernel Library -- referenced at runtime by `libkernel.so` --
 is a collection of symbols that provide access to OS specific features.
 For more information see the [documentation](doc).
 
-## Building
+## Dependencies
 
-> [!NOTE]
-> This tutorial assume that the development environment is set as in
-> the codumentation of the Tuim project.
+Build time:
+* Tuim's developer kit
+
+Runtime:
+* No dependency
+
+## Interfaces
+
+For C Programing Language:
+* See the header [kernel.h](./include/kernel.h)
+
+## Get started
 
 Build for Linux:
 
 ```sh
 make linux
+```
+
+Install:
+
+```sh
+cp lib/libkernel.so "${TUIM_HOME}/lib/libkernel.so"
+cp include/kernel.h "${TUIM_HOME}/include/kernel.h"
 ```
 
 ## Donations

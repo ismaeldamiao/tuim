@@ -1,9 +1,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#ifdef __unix__
-   int _sys_write(int fd, void *buf, size_t len);
-#endif
+#include <kernel.h>
 
 int puts(const char *s){
    #ifdef __unix__

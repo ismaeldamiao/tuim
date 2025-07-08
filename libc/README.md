@@ -5,11 +5,23 @@ is a implementation of the C Standard Library for the freestanding environment
 using that Tuim provide.
 For more information see the [documentation](doc).
 
-## Building
+## Dependencies
 
-> [!NOTE]
-> This tutorial assume that the development environment is set as in
-> the codumentation of the Tuim project.
+Build time:
+* Tuim's developer kit
+* `kernel.h`[^libkernel]
+
+Runtime:
+* `libkernel.so`[^libkernel]
+
+[^1]: I.F.F. dos Santos, The Kernel Library, version 0.3, 2025.
+
+## Interfaces
+
+For C Programing Language:
+* See headers at [include](include)
+
+## Building
 
 Build for Unix (Linux, Mach-OS, BSD, ...):
 

@@ -14,8 +14,7 @@
    "clangd.fallbackFlags": [
       "--language=c",
       "-std=c23",
-      "-D _POSIX_C_SOURCE=200809L",
       "-I",
-      "${workspaceFolder}/libraries/include",
+      "${workspaceFolder}/libkernel/include",
    ]
 }
