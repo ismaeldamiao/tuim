@@ -1,26 +1,5 @@
-#include "../../elf.h"
-
-#ifndef swap16
-   #define swap16(x) (x)
-#endif
-
-#ifndef swap32
-   #define swap32(x) (x)
-#endif
-
-#ifndef swap64
-   #define swap64(x) (x)
-#endif
-
-#ifndef Elf
-   #define Elf(x) Elf32_##x
-#endif
-
-#if __STDC_VERSION__ < 202311L
-   #define true 1
-   #define false 0
-   typedef int bool;
-#endif /* __STDC_VERSION__ < 202311L */
+#include "../elf.h"
+#include "../tuim_backend.h"
 
 bool tuim_attributes(uint8_t *obj){
    /* Arm Architecture -- Little Endian

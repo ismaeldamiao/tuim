@@ -10,11 +10,20 @@ jobs:
         c_compiler: [gcc, clang]
     steps:
       - uses: actions/checkout@v4
-      - name: Build, Install and Test
+      - name: Build Interpreter
         shell: sh
         working-directory: ${{ github.workspace }}
         run: |
           export CC="${{ matrix.c_compiler }}"
-          sh scripts/build.sh aarch64 xnu
-          sh scripts/install.sh /tmp
-          sh scripts/test.sh aarch64
+          export CFLAGS="-D _POSIX_C_SOURCE=200112L -O3 -c"
+          export LD="${{ matrix.c_compiler }}"
+          export LDFLAGS=""
+          cd tuim
+          make
+      - name: Install Interpreter
+        shell: sh
+        working-directory: ${{ github.workspace }}
+        run: |
+          export TUIM_HOME=/opt/tuim
+          sudo cp tuim/bin/tuim $TUIM_HOME/tuim
+          sudo ln -sf $TUIM_HOME/tuim /usr/bin/tuim

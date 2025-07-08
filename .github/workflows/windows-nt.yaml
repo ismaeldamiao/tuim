@@ -16,11 +16,5 @@ jobs:
       - name: Build Interpreter
         working-directory: ${{ github.workspace }}
         run: |
-          cd interfaces
-          md bin
-          cl src/main.c /link /out:bin/tuim.exe
-#    - name: Archive output
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: build-${{ matrix.os }}-${{ matrix.c_compiler }}
-#        path: ${{ github.workspace }}/build.zip
+          cd tuim
+          make

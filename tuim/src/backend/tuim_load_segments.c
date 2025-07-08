@@ -29,17 +29,6 @@
    * Part of Tuim Project.
    * Last modified: July 07, 2025.
 ------------------------------------ */
-#if defined(_POSIX_C_SOURCE)
-   #include <sys/types.h>
-   #include <sys/stat.h>
-   #include <sys/mman.h>
-   #include <fcntl.h>
-   #include <unistd.h>
-#elif defined(_WIN32)
-   #include <Windows.h>
-#else
-   #error Target OS is not supported
-#endif /* defined(_POSIX_C_SOURCE) */
 
 #include "elf.h"
 #include "../api/ascii/ascii.h"
@@ -47,36 +36,36 @@
 
 #include "tuim_backend.h"
 
-static int get_dynamic(struct tuim_backend *info, void **ptr);
-static int get_dynstr(struct tuim_backend *info, void **ptr);
-static int get_dynsym(struct tuim_backend *info, void **ptr);
-static int load(struct tuim_backend *info, void **ptr);
+static int get_dynamic(const tuim_ctx *ctx, struct tuim_backend *info, void **ptr);
+static int get_dynstr(const tuim_ctx *ctx, struct tuim_backend *info, void **ptr);
+static int get_dynsym(const tuim_ctx *ctx, struct tuim_backend *info, void **ptr);
+static int load(const tuim_ctx *ctx, struct tuim_backend *info, void **ptr);
+
+//int puts(const char *);
 
 int tuim_load_segments(const tuim_ctx *ctx, const uint8_t *obj, void **ptr){
    struct tuim_backend info;
 
-   (void)ctx;
-
    info.obj = obj;
-   return get_dynamic(&info, ptr);
+   return get_dynamic(ctx, &info, ptr);
 }
 
 static const void *tuim_get_shdr_entry(const uint8_t *obj, const uint8_t *section);
 static const void *tuim_get_section(const uint8_t *obj, const uint8_t *section);
 
-static int get_dynamic(struct tuim_backend *info, void **ptr){
+static int get_dynamic(const tuim_ctx *ctx, struct tuim_backend *info, void **ptr){
    Elf(Byte) *section_name = ascii(".dynamic");
    info->dyn = tuim_get_section(info->obj, section_name);
 
-   return get_dynstr(info, ptr);
+   return get_dynstr(ctx, info, ptr);
 }
-static int get_dynstr(struct tuim_backend *info, void **ptr){
+static int get_dynstr(const tuim_ctx *ctx, struct tuim_backend *info, void **ptr){
    Elf(Byte) *section_name = ascii(".dynstr");
    info->dynstr = tuim_get_section(info->obj, section_name);
 
-   return get_dynsym(info, ptr);
+   return get_dynsym(ctx, info, ptr);
 }
-static int get_dynsym(struct tuim_backend *info, void **ptr){
+static int get_dynsym(const tuim_ctx *ctx, struct tuim_backend *info, void **ptr){
    const Elf(Byte) *section_name = ascii(".dynsym");
    const Elf(Shdr) *shdr = tuim_get_shdr_entry(info->obj, section_name);
 
@@ -89,10 +78,10 @@ static int get_dynsym(struct tuim_backend *info, void **ptr){
    info->sh_entsize = (
       is_Elf32 ? swap32(shdr->sh_entsize) : swap64(shdr->sh_entsize));
 
-   return load(info, ptr);
+   return load(ctx, info, ptr);
 }
 
-static int load(struct tuim_backend *info, void **ptr){
+static int load(const tuim_ctx *ctx, struct tuim_backend *info, void **ptr){
    const Elf(Byte) *obj = (Elf(Byte) *)(info->obj);
 
    const Elf(Ehdr) *ehdr;
@@ -102,8 +91,7 @@ static int load(struct tuim_backend *info, void **ptr){
    uint64_t e_phoff, e_phnum, p_vaddr, p_memsz, p_filesz, p_offset;
    uint64_t start_vaddr, end_vaddr, program_size;
    bool first_time_here;
-   void *program_image;
-   uint8_t *segment;
+   Elf(Addr) program_image, segment;
 
    ehdr = (void*)obj;
    e_phoff = (is_Elf32 ? swap32(ehdr->e_phoff) : swap64(ehdr->e_phoff));
@@ -134,24 +122,11 @@ static int load(struct tuim_backend *info, void **ptr){
    program_size = end_vaddr - start_vaddr;
 
    /* Allocate memory for the program image */
-#if defined(_POSIX_C_SOURCE)
-   {
-      size_t size = program_size + sizeof(struct tuim_backend);
-      size_t alignment = sysconf(_SC_PAGESIZE);
-      void **memptr = &program_image;
-
-      if(posix_memalign(memptr, alignment, size) != 0){
-         return 1;
-      }
+   program_image = tuim_aligned_alloc(
+      ctx, SIZE_C(0), program_size);
+   if(program_image == tuim_nullptr){
+      return 1;
    }
-#elif defined(_WIN32)
-      *program = VirtualAlloc(NULL, *sz, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-      if(*program == NULL){
-         return TUIM_ENOMEM;
-      }
-#else
-#error Unknown target OS
-#endif /* defined(_POSIX_C_SOURCE) */
 
    /* Read and load loadable segments */
    phdr = (void*)(obj + e_phoff);
@@ -163,62 +138,38 @@ static int load(struct tuim_backend *info, void **ptr){
       p_type = swap32(phdr->p_type);
       if(p_type != PT_LOAD) continue;
 
-      p_offset = (is_Elf32? swap32(phdr->p_offset) : swap64(phdr->p_offset));
-      p_vaddr = (
-         (offsetof(Elf(Phdr), p_align) == offsetof(Elf32_Phdr, p_align)) ?
-         swap32(phdr->p_vaddr) : swap64(phdr->p_vaddr)
-      );
+      p_offset = (is_Elf32 ? swap32(phdr->p_offset) : swap64(phdr->p_offset));
+      p_vaddr = (is_Elf32 ? swap32(phdr->p_vaddr) : swap64(phdr->p_vaddr));
       p_memsz = (is_Elf32 ? swap32(phdr->p_memsz) : swap64(phdr->p_memsz));
-      p_filesz = (is_Elf32? swap32(phdr->p_filesz): swap64(phdr->p_filesz));
+      p_filesz = (is_Elf32 ? swap32(phdr->p_filesz): swap64(phdr->p_filesz));
 
-      segment = (Elf(Byte)*)program_image + (p_vaddr - start_vaddr);
-
-      memcpy(segment, obj + p_offset, p_filesz);
+      segment = program_image + (p_vaddr - start_vaddr);
+      tuim_store(ctx, segment, obj + p_offset, p_filesz);
 
       if(p_memsz > p_filesz){
-         memset(segment + p_filesz, 0, p_memsz - p_filesz);
+         tuim_memset(ctx, segment + p_filesz, 0, p_memsz - p_filesz);
       }
 
       /* Protect the memory */
-#if defined(_POSIX_C_SOURCE)
-      {
-         int prot = 0;
-         if(phdr->p_flags & PF_X) prot |= PROT_EXEC;
-         if(phdr->p_flags & PF_W) prot |= PROT_WRITE;
-         if(phdr->p_flags & PF_R) prot |= PROT_READ;
-         mprotect(segment, p_memsz, prot);
-      }
-#elif defined(_WIN32)
-      DWORD oldProtect;
-      if(phdr->p_flags & PF_X) {
-         if(!VirtualProtect(segment, phdr->p_memsz, PAGE_EXECUTE_READ, &oldProtect)) {
-            return TUIM_ENOMEM;
-         }
-      } else if(phdr->p_flags & PF_W) {
-         if(!VirtualProtect(segment, phdr->p_memsz, PAGE_READWRITE, &oldProtect)) {
-            return TUIM_ENOMEM;
-         }
-      } else if(phdr->p_flags & PF_R) {
-         if(!VirtualProtect(segment, phdr->p_memsz, PAGE_READONLY, &oldProtect)) {
-            return TUIM_ENOMEM;
-         }
-      }
-#else
-#error Unknown target OS
-#endif /* defined(_POSIX_C_SOURCE) */
+      tuim_mprotect(ctx, segment, p_memsz, phdr->p_flags);
    }
 
    info->program_image = program_image;
    info->program_size = program_size;
+   info->start_vaddr = start_vaddr;
    info->auxiliary = NULL;
 
    {
       struct tuim_backend *info_tmp;
 
-      info_tmp = info;
-      // FIXME: Check aligment
-      info = (void*)((Elf(Byte)*)program_image + program_size);
-      *info = *info_tmp;
+      info_tmp = malloc(sizeof(struct tuim_backend));
+      if(info_tmp == NULL){
+         tuim_free(ctx, program_image);
+         return 1;
+      }
+
+      *info_tmp = *info;
+      info = info_tmp;
    }
 
    *ptr = info;

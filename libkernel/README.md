@@ -1,4 +1,8 @@
-# The C Standard Library
+# The Tuim's kernel Library
+
+Tuim's kernel library -- referenced at runtime by `libkernel.so` --
+is a collection of symbols that provide access to OS specific features.
+For more information see the [documentation](doc).
 
 ## Building
 
@@ -6,10 +10,10 @@
 > This tutorial assume that the development environment is set as in
 > the codumentation of the Tuim project.
 
-Build for Linux (any of):
+Build for Linux:
 
 ```sh
-sh scripts/build.sh armv7 linux
+make linux
 ```
 
 ## Donations

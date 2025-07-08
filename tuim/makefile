@@ -16,13 +16,21 @@ TUIM-SOURCES=src/cli/main.c \
    src/api/tuim_exec.c
 TUIM-OBJECTS=$(TUIM-SOURCES:src/%.c=tmp/%.o)
 
-BACKEND-SOURCES=src/backend/tuim_get_dependency.c \
+BACKEND-SOURCES=src/backend/host-machine/tuim_jump.c \
+   src/backend/host-machine/tuim_aligned_alloc.c \
+   src/backend/host-machine/tuim_free.c \
+   src/backend/host-machine/tuim_load.c \
+   src/backend/host-machine/tuim_malloc.c \
+   src/backend/host-machine/tuim_memcpy.c \
+   src/backend/host-machine/tuim_memset.c \
+   src/backend/host-machine/tuim_mprotect.c \
+   src/backend/host-machine/tuim_store.c \
+   src/backend/tuim_get_dependency.c \
    src/backend/tuim_get_relocation.c \
    src/backend/tuim_load_segments.c \
    src/backend/tuim_attributes.c \
    src/backend/tuim_relocate.c \
-   src/backend/tuim_get_symbol.c \
-   src/backend/tuim_jump.c
+   src/backend/tuim_get_symbol.c
 BACKEND-OBJECTS=$(BACKEND-SOURCES:src/%.c=tmp/%.o)
 
 tuim: $(BACKEND-OBJECTS) $(TUIM-OBJECTS)

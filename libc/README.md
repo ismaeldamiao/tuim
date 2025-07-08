@@ -1,15 +1,20 @@
 # The C Standard Library
 
+The Tuim's C Standard Library -- referenced at runtime by `libc.so` --
+is a implementation of the C Standard Library for the freestanding environment
+using that Tuim provide.
+For more information see the [documentation](doc).
+
 ## Building
 
 > [!NOTE]
 > This tutorial assume that the development environment is set as in
 > the codumentation of the Tuim project.
 
-Build for Linux (any of):
+Build for Unix (Linux, Mach-OS, BSD, ...):
 
 ```sh
-sh scripts/build.sh armv7 linux
+make unix
 ```
 
 ## Donations

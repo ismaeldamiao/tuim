@@ -1,7 +1,7 @@
 /* *****************************************************************************
    MIT License
 
-   Copyright (c) 2023-2024 I.F.F. dos Santos
+   Copyright (c) 2024-2025 I.F.F. dos Santos <ismaellxd@gmail.com>
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the “Software”), to
@@ -21,24 +21,22 @@
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
    IN THE SOFTWARE.
 ***************************************************************************** */
-#ifndef _ATOMIC_H_
-#define _ATOMIC_H_
-#ifdef __cplusplus
-extern "C" {
-#endif
-#if defined(__STDC_VERSION__)
-#if __STDC_VERSION__ >= 201112L
-/* *****************************************************************************
-   Standard header <atomic.h>.
-   Last modified: Jule 16, 2024.
-***************************************************************************** */
+#include <stddef.h>
+#include <stdint.h>
+/* ------------------------------------
+   This function execute the code at the address on the target machine --- in
+   that case the host machine itself.
+   * Part of Tuim Project.
+   * Last modified: July 07, 2025.
+------------------------------------ */
+#include "../../api/tuim.h"
+#include "../../api/tuim_ctx.h"
 
-/* *****************************************************************************
-   "Principium sapientiae timor Domini, et scientia sanctorum prudentia."
-***************************************************************************** */
-#endif // __STDC_VERSION__ >= 201112L
-#endif // defined(__STDC_VERSION__)
-#ifdef __cplusplus
+typedef void(*code_t)(void);
+
+void tuim_jump(const tuim_ctx *ctx, uint64_t address){
+   code_t _start;
+   (void)ctx;
+   _start = (code_t)address;
+   _start();
 }
-#endif
-#endif // _ATOMIC_H_

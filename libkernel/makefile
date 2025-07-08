@@ -12,3 +12,4 @@ tmp/%.o: tmp/%.s
 
 clean:
 	rm -Rf tmp
+	rm -Rf lib

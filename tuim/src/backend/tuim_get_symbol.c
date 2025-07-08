@@ -49,7 +49,7 @@ uint64_t tuim_get_symbol(const tuim_ctx *ctx, void *ptr, const uint8_t *symbol){
 
    if(symbol == NULL){
       address = (is_Elf32 ? swap32(ehdr->e_entry) : swap64(ehdr->e_entry));
-      address = (uint64_t)(info->program_image) + (address - info->start_vaddr);
+      address = info->program_image + (address - info->start_vaddr);
       return address;
    }
 
@@ -59,16 +59,15 @@ uint64_t tuim_get_symbol(const tuim_ctx *ctx, void *ptr, const uint8_t *symbol){
       if(ascii_strcmp(symbol, dynstr + swap32(sym->st_name)) == 0){
          unsigned int st_shndx = swap16(sym->st_shndx);
          if(st_shndx == STN_UNDEF){
-            return (uint64_t)NULL;
+            return tuim_nullptr;
          }else if(st_shndx == SHN_XINDEX){
-            return (uint64_t)NULL; // FIXME: Find for it on SHT_SYMTAB_SHNDX
+            return tuim_nullptr; // FIXME: Find for it on SHT_SYMTAB_SHNDX
          }else{
             address =
                (is_Elf32 ? swap32(sym->st_value) : swap64(sym->st_value));
-            return
-               (uint64_t)(info->program_image) + (address - info->start_vaddr);
+            return info->program_image + (address - info->start_vaddr);
          }
       }
    }
-   return (uint64_t)NULL;
+   return tuim_nullptr;
 }

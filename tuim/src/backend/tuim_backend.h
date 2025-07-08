@@ -68,6 +68,9 @@
 
 #define is_Elf32 (offsetof(Elf(Dyn), d_un) == offsetof(Elf32_Dyn, d_un))
 
+typedef uint32_t Elf32_Addr;
+typedef uint64_t Elf64_Addr;
+
 /* note that all pointer on the following structure shall point to objects
    on the host machine's memory */
 struct tuim_backend {
@@ -93,14 +96,38 @@ struct tuim_backend {
    const void *auxiliary;
 
    /* others informations */
-   void *program_image;
+   Elf(Addr) program_image, start_vaddr;
    size_t program_size;
-   uint64_t start_vaddr;
 };
 
 /* ---
    called only by backend
 --- */
+extern Elf(Addr) tuim_nullptr;
+Elf(Addr) tuim_malloc(const tuim_ctx *ctx, size_t size);
+Elf(Addr) tuim_aligned_alloc(const tuim_ctx *ctx, size_t alignment, size_t size);
+void tuim_mprotect(const tuim_ctx *ctx, Elf(Addr) addr, size_t size, int prot);
+void tuim_free(const tuim_ctx *ctx, Elf(Addr) addr);
+
+void tuim_memcpy (const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n);
+void tuim_memcpy2(const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n);
+void tuim_memcpy4(const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n);
+void tuim_memcpy8(const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n);
+
+void tuim_memset (const tuim_ctx *ctx, Elf(Addr) dest, int c, size_t n);
+void tuim_memset2(const tuim_ctx *ctx, Elf(Addr) dest, int c, size_t n);
+void tuim_memset4(const tuim_ctx *ctx, Elf(Addr) dest, int c, size_t n);
+void tuim_memset8(const tuim_ctx *ctx, Elf(Addr) dest, int c, size_t n);
+
+void tuim_load (const tuim_ctx *ctx, void *dest, Elf(Addr) src, size_t n);
+void tuim_load2(const tuim_ctx *ctx, void *dest, Elf(Addr) src, size_t n);
+void tuim_load4(const tuim_ctx *ctx, void *dest, Elf(Addr) src, size_t n);
+void tuim_load8(const tuim_ctx *ctx, void *dest, Elf(Addr) src, size_t n);
+
+void tuim_store (const tuim_ctx *ctx, Elf(Addr) dest, const void *src, size_t n);
+void tuim_store2(const tuim_ctx *ctx, Elf(Addr) dest, const void *src, size_t n);
+void tuim_store4(const tuim_ctx *ctx, Elf(Addr) dest, const void *src, size_t n);
+void tuim_store8(const tuim_ctx *ctx, Elf(Addr) dest, const void *src, size_t n);
 
 /* ---
    called by tuim_loader
