@@ -16,5 +16,7 @@
       "-std=c23",
       "-I",
       "${workspaceFolder}/libkernel/include",
+      "-include",
+      "${workspaceFolder}/tuim/src/tuim_build.h",
    ]
 }

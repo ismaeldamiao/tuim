@@ -23,52 +23,30 @@
 ***************************************************************************** */
 #include <stddef.h>
 #include <stdint.h>
+#include "tuim_backend.h"
 /* ------------------------------------
    This function return a string holding a name of a DT_NEEDED entry on the
    dynamic section.
    * Part of Tuim Project.
-   * Last modified: July 07, 2025.
+   * Last modified: July 08, 2025.
 ------------------------------------ */
-#include "elf.h"
-#include "tuim_backend.h"
 
-#if __STDC_VERSION__ < 202311L
-   #define true 1
-   #define false 0
-#endif
-#if __STDC_VERSION__ < 199901L
-   typedef int bool;
-#elif (__STDC_VERSION__ >= 199901L) && (__STDC_VERSION__ < 202311L)
-   typedef _Bool bool;
+#if TUIM_BUILD_FLAGS & TUIM_BF_ELF32
+   #define USE_ELF32_TEMPLATE
+   #include "templates/get_dependency.c"
+   #undef Elf
+   #undef USE_ELF32_TEMPLATE
 #endif
 
-#ifndef swap16
-   #define swap16(x) (x)
-#endif
-
-#ifndef swap32
-   #define swap32(x) (x)
-#endif
-
-#ifndef swap64
-   #define swap64(x) (x)
-#endif
-
-#ifndef Elf
-   #define Elf(x) Elf32_##x
+#if TUIM_BUILD_FLAGS & TUIM_BF_ELF64
+   #define USE_ELF64_TEMPLATE
+   #include "templates/get_dependency.c"
+   #undef USE_ELF64_TEMPLATE
 #endif
 
 //uint8_t *tuim_get_dependency(uint8_t *obj, void **dyn_ptr, uint8_t *dynstr){
 const uint8_t *tuim_get_dependency(const tuim_ctx *ctx, void *ptr){
    struct tuim_backend *info = ptr;
-   const uint8_t *dynstr = info->dynstr;
-
-   bool target_is_32 = (offsetof(Elf(Dyn), d_un) == offsetof(Elf32_Dyn, d_un));
-
-   const Elf(Dyn) *dyn;
-   uint64_t d_val;
-   int64_t d_tag;
-
    (void)ctx;
 
    if(info->auxiliary == NULL){
@@ -76,13 +54,17 @@ const uint8_t *tuim_get_dependency(const tuim_ctx *ctx, void *ptr){
       info->auxiliary = info->dyn;
    }
 
-   dyn = info->auxiliary;
+   /* call the correct implementation of tuim_get_dependency */
 
-   read_tag: d_tag = (target_is_32 ? swap32(dyn->d_tag) : swap64(dyn->d_tag));
-   if(d_tag == DT_NULL){ info->auxiliary = NULL; return NULL; }
-   if(d_tag != DT_NEEDED){ ++dyn; goto read_tag; }
-
-   d_val = (target_is_32 ? swap32(dyn->d_un.d_val) : swap64(dyn->d_un.d_val));
-   info->auxiliary = dyn + 1;
-   return dynstr + d_val;
+   #if (TUIM_BUILD_FLAGS & TUIM_BF_ELF32) && (TUIM_BUILD_FLAGS & TUIM_BF_ELF64)
+      if(obj[EI_CLASS] == ELFCLASS32)
+         return get_dependency32(ptr);
+      else if(obj[EI_CLASS] == ELFCLASS64)
+         return get_dependency64(ptr);
+      return 2;
+   #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF32
+      return get_dependency32(ptr);
+   #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF64
+      return get_dependency64(ptr);
+   #endif
 }

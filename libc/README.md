@@ -14,7 +14,7 @@ Build time:
 Runtime:
 * `libkernel.so`[^libkernel]
 
-[^libkernel]: I.F.F. dos Santos, The Kernel Library, version 0.3, 2025.
+[^libkernel]: I.F.F. dos Santos, The Kernel Library, version 0.3, 2025. Get it at <https://github.com/ismaeldamiao/tuim/tree/main/libkernel>.
 
 ## Interfaces
 

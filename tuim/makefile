@@ -1,5 +1,5 @@
 # export CC=clang
-# export CFLAGS="-std=c23 -D _POSIX_C_SOURCE=200112L -Wall -Wextra -Wpedantic -O3 -c"
+# export CFLAGS="-std=c23 -Wall -Wextra -Wpedantic -O3 -c"
 # export LD=clang
 # export LDFLAGS="-fuse-ld=lld"
 # make
@@ -43,7 +43,7 @@ backend: $(BACKEND-OBJECTS)
 
 tmp/%.o: src/%.c
 	@ mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -include src/tuim_build.h $< -o $@
 
 clean:
 	rm -Rf tmp

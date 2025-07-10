@@ -26,36 +26,58 @@
 #include "elf.h"
 #include "tuim_backend.h"
 /* ------------------------------------
-   Relocate EM_X86_64 files.
-   * Reference document:
-     System V Application Binary Interface
-     AMD64 Architecture Processor Supplement
-     (With LP64 and ILP32 Programming Models)
-     Version 1.0
-     https://gitlab.com/x86-psABIs/x86-64-ABI
+   template for the tuim_get_dependency function
    * Part of Tuim Project.
-   * Last modified: July 10, 2025.
+   * Last modified: July 08, 2025.
 ------------------------------------ */
 
-#define USE_ELF32_TEMPLATE
-#include "relocate.c"
-#undef Elf
-#undef USE_ELF32_TEMPLATE
+#if 0
+   #define USE_ELF32_TEMPLATE
+#endif
 
-#define USE_ELF64_TEMPLATE
-#include "relocate.c"
-#undef USE_ELF64_TEMPLATE
+#define Swap_Word  swap32
+#define Swap_Xword swap64
 
+#define Swap_Sword  swap32
+#define Swap_Sxword swap64
 
-const Elf32_Byte *
-tuim_relocate(const tuim_ctx *ctx, void *ptr,const void *_rel,const void *_dep){
+#if defined(USE_ELF32_TEMPLATE)
+   #define GET_DEPENDENCY get_dependency32
+   #define Elf(x) Elf32_##x
+#elif defined(USE_ELF64_TEMPLATE)
+   #define GET_DEPENDENCY get_dependency64
+   #define Elf(x) Elf64_##x
+#endif
 
-   const Elf(Byte) * const obj = ((struct tuim_backend*)ptr)->obj;
+//uint8_t *tuim_get_dependency(uint8_t *obj, void **dyn_ptr, uint8_t *dynstr){
+static const uint8_t *GET_DEPENDENCY(struct tuim_backend *info){
+   const Elf(Byte) *dynstr = info->dynstr;
+   const Elf(Dyn) *dyn;
+   #if defined(USE_ELF32_TEMPLATE)
+      Elf32_Word d_val;
+      Elf32_Sword d_tag;
+   #elif defined(USE_ELF64_TEMPLATE)
+      Elf64_Xword d_val;
+      Elf64_Xsword d_tag;
+   #endif
 
-   if(obj[EI_CLASS] == ELFCLASS32)
-      return relocate32(ctx, ptr, _rel, _dep);
-   else if(obj[EI_CLASS] == ELFCLASS64)
-      return relocate64(ctx, ptr, _rel, _dep);
+   dyn = info->auxiliary;
 
-   return obj + EI_CLASS;
+   #if defined(USE_ELF32_TEMPLATE)
+      read_tag: d_tag = Swap_Sword(dyn->d_tag);
+   #elif defined(USE_ELF64_TEMPLATE)
+      read_tag: d_tag = Swap_Sxword(dyn->d_tag);
+   #endif
+
+   if(d_tag == DT_NULL){ info->auxiliary = NULL; return NULL; }
+   if(d_tag != DT_NEEDED){ ++dyn; goto read_tag; }
+
+   #if defined(USE_ELF32_TEMPLATE)
+      d_val = Swap_Word (dyn->d_un.d_val);
+   #elif defined(USE_ELF64_TEMPLATE)
+      d_val = Swap_Xword(dyn->d_un.d_val);
+   #endif
+
+   info->auxiliary = dyn + 1;
+   return dynstr + d_val;
 }

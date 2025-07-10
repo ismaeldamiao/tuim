@@ -23,51 +23,57 @@
 ***************************************************************************** */
 #include <stddef.h>
 #include <stdint.h>
+#include "tuim_backend.h"
 /* ------------------------------------
    This function find by a symbol definition on dynamic symbol table.
    * Part of Tuim Project.
-   * Last modified: July 07, 2025.
+   * Last modified: July 09, 2025.
 ------------------------------------ */
-#include "elf.h"
-#include "../api/ascii/string.h"
 
-#include "../api/tuim.h"
-#include "../api/tuim_ctx.h"
-#include "tuim_backend.h"
+#if TUIM_BUILD_FLAGS & TUIM_BF_ELF32
+   #define USE_ELF32_TEMPLATE
+   #include "templates/get_symbol.c"
+   #undef Elf
+   #undef USE_ELF32_TEMPLATE
+#endif
+
+#if TUIM_BUILD_FLAGS & TUIM_BF_ELF64
+   #define USE_ELF64_TEMPLATE
+   #include "templates/get_symbol.c"
+   #undef USE_ELF64_TEMPLATE
+#endif
+
+const void *tuim_get_sym(void *ptr, const uint8_t *symbol){
+
+   /* call the correct implementation of tuim_get_symbol */
+
+   #if (TUIM_BUILD_FLAGS & TUIM_BF_ELF32) && (TUIM_BUILD_FLAGS & TUIM_BF_ELF64)
+      if(obj[EI_CLASS] == ELFCLASS32)
+         return get_sym32(ptr, symbol);
+      else if(obj[EI_CLASS] == ELFCLASS64)
+         return get_sym64(ptr, symbol);
+      return 2;
+   #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF32
+      return get_sym32(ptr, symbol);
+   #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF64
+      return get_sym64(ptr, symbol);
+   #endif
+}
 
 uint64_t tuim_get_symbol(const tuim_ctx *ctx, void *ptr, const uint8_t *symbol){
-   struct tuim_backend *info = ptr;
-   const Elf(Ehdr) *ehdr = (void*)(info->obj);
-   const Elf(Sym) *dynsym = info->dynsym;
-   const Elf(Byte) *dynstr = info->dynstr;
-
-   const Elf(Sym) *sym;
-   size_t i, i_max;
-   uint64_t address;
-
    (void)ctx;
 
-   if(symbol == NULL){
-      address = (is_Elf32 ? swap32(ehdr->e_entry) : swap64(ehdr->e_entry));
-      address = info->program_image + (address - info->start_vaddr);
-      return address;
-   }
+   /* call the correct implementation of tuim_get_symbol */
 
-   i_max = info->sh_size / info->sh_entsize;
-   for(i = info->sh_info; i < i_max; ++i){
-      sym = (void*)((Elf(Byte)*)dynsym + i * info->sh_entsize);
-      if(ascii_strcmp(symbol, dynstr + swap32(sym->st_name)) == 0){
-         unsigned int st_shndx = swap16(sym->st_shndx);
-         if(st_shndx == STN_UNDEF){
-            return tuim_nullptr;
-         }else if(st_shndx == SHN_XINDEX){
-            return tuim_nullptr; // FIXME: Find for it on SHT_SYMTAB_SHNDX
-         }else{
-            address =
-               (is_Elf32 ? swap32(sym->st_value) : swap64(sym->st_value));
-            return info->program_image + (address - info->start_vaddr);
-         }
-      }
-   }
-   return tuim_nullptr;
+   #if (TUIM_BUILD_FLAGS & TUIM_BF_ELF32) && (TUIM_BUILD_FLAGS & TUIM_BF_ELF64)
+      if(obj[EI_CLASS] == ELFCLASS32)
+         return get_symbol32(ptr, symbol);
+      else if(obj[EI_CLASS] == ELFCLASS64)
+         return get_symbol64(ptr, symbol);
+      return 2;
+   #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF32
+      return get_symbol32(ptr, symbol);
+   #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF64
+      return get_symbol64(ptr, symbol);
+   #endif
 }

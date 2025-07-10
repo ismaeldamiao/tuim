@@ -28,10 +28,10 @@
    * Last modified: February 28, 2025.
 ------------------------------------ */
 .section .text
-   .global _sys_write
-   .type   _sys_write, STT_FUNC
+   .global sys_write
+   .type   sys_write, STT_FUNC
 
-_sys_write:
+sys_write:
 #if defined(__riscv) /* RISC-V ---------------------------------------------- */
    LI         a7, __NR_write
    ECALL
@@ -59,4 +59,4 @@ _sys_write:
    SYSCALL
    RET
 #endif /* defined(__riscv) */
-.size _sys_write, . - _sys_write
+.size sys_write, . - sys_write

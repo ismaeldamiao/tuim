@@ -25,42 +25,14 @@
 #define TUIM_BACKEND_HOST_H
 
 #include <stdint.h>
-#include "../api/tuim.h"
+#include "tuim.h"
 /* ------------------------------------
    Header file for the backend of Tuim's interpreter.
    * Part of Tuim Project.
    * Last modified: July 07, 2025.
 ------------------------------------ */
 
-#if __STDC_VERSION__ < 202311L
-   #define true 1
-   #define false 0
-#endif
-#if __STDC_VERSION__ < 199901L
-   typedef int bool;
-#elif (__STDC_VERSION__ >= 199901L) && (__STDC_VERSION__ < 202311L)
-   typedef _Bool bool;
-#endif
-
-#if __STDC_VERSION__ < 201112L
-   #define thread_local
-#elif  (__STDC_VERSION__ >= 201112L) && (__STDC_VERSION__ < 202311L)
-   #define thread_local _Thread_local
-#endif
-
 #define SIZE_C(x) ((size_t)x##U)
-
-#ifndef swap16
-   #define swap16(x) (x)
-#endif
-
-#ifndef swap32
-   #define swap32(x) (x)
-#endif
-
-#ifndef swap64
-   #define swap64(x) (x)
-#endif
 
 #ifndef Elf
    #define Elf(x) Elf32_##x
@@ -128,6 +100,8 @@ void tuim_store (const tuim_ctx *ctx, Elf(Addr) dest, const void *src, size_t n)
 void tuim_store2(const tuim_ctx *ctx, Elf(Addr) dest, const void *src, size_t n);
 void tuim_store4(const tuim_ctx *ctx, Elf(Addr) dest, const void *src, size_t n);
 void tuim_store8(const tuim_ctx *ctx, Elf(Addr) dest, const void *src, size_t n);
+
+const void *tuim_get_sym(void *ptr, const uint8_t *symbol);
 
 /* ---
    called by tuim_loader

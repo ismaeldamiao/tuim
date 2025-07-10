@@ -97,6 +97,8 @@ void tuim_loader(tuim_ctx *ctx, const void *elf_path){
    struct tuim_loader_variables arg;
    tuim_elf elf_tmp;
 
+   DBG("LOG: %s was loaded at ", string(elf_path));
+
    arg.ctx = ctx;
    arg.elf = &elf_tmp;
    elf_tmp.identifier.character_array = (void*)elf_path;
@@ -310,7 +312,4 @@ static void add_elf_to_the_list(struct tuim_loader_variables *arg){
    ctx->elf_list = list; /* relevant only at the first time */
 
    ctx->status = TUIM_SUCCESS;
-
-   //fputs("LOG: loaded ", stdout);
-   //puts(string(elf->identifier.character_array));
 }

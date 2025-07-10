@@ -12,9 +12,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: ${{ matrix.arch }} 
+          arch: ${{ matrix.arch }
+      - uses: egor-tensin/setup-clang@v1
+        with:
+          version: latest
+          platform: ${{ matrix.arch }
       - name: Build Interpreter
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}/tuim
         run: |
-          cd tuim
           make

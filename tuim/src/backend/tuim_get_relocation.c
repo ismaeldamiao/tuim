@@ -23,17 +23,24 @@
 ***************************************************************************** */
 #include <stddef.h>
 #include <stdint.h>
-#include <threads.h>
+#include "tuim_backend.h"
 /* ------------------------------------
    This function return a relocation entry.
    * Part of Tuim Project.
    * Last modified: July 07, 2025.
 ------------------------------------ */
-#include "elf.h"
 
-#include "tuim_backend.h"
+#if TUIM_BUILD_FLAGS & TUIM_BF_ELF32
+   #define USE_ELF32_TEMPLATE
+   #include "templates/get_relocation.c"
+   #undef USE_ELF32_TEMPLATE
+#endif
 
-static void read_dynamic_table(struct tuim_backend *info);
+#if TUIM_BUILD_FLAGS & TUIM_BF_ELF64
+   #define USE_ELF64_TEMPLATE
+   #include "templates/get_relocation.c"
+   #undef USE_ELF64_TEMPLATE
+#endif
 
 const void* tuim_get_relocation(const tuim_ctx *ctx, void *ptr){
    struct tuim_backend *info = ptr;
@@ -42,7 +49,23 @@ const void* tuim_get_relocation(const tuim_ctx *ctx, void *ptr){
    (void)ctx;
 
    if(info->auxiliary == NULL){
-      read_dynamic_table(info);
+
+      if(info->dyn == NULL) return NULL;
+
+      /* call the correct implementation of read_dynamic_table */
+
+      #if (TUIM_BUILD_FLAGS & TUIM_BF_ELF32) && (TUIM_BUILD_FLAGS & TUIM_BF_ELF64)
+         if(obj[EI_CLASS] == ELFCLASS32)
+            read_dynamic_table32(info);
+         else if(obj[EI_CLASS] == ELFCLASS64)
+            read_dynamic_table64(info);
+         return 2;
+      #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF32
+         read_dynamic_table32(info);
+      #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF64
+         read_dynamic_table64(info);
+      #endif
+
       if(info->pltrel != DT_NULL){
          info->is_rel =  (info->pltrel == DT_REL);
          info->is_rela =  (info->pltrel == DT_RELA);
@@ -97,50 +120,4 @@ const void* tuim_get_relocation(const tuim_ctx *ctx, void *ptr){
    }
 
    return info->auxiliary;
-}
-
-static void read_dynamic_table(struct tuim_backend *info){
-   const Elf(Dyn) *dyn = info->dyn;
-   uint64_t d_val, d_ptr;
-   int64_t d_tag;
-
-   info->rel = NULL;
-   info->rela = NULL;
-   info->pltrel = DT_NULL;
-
-   info->relent = info->relaent = SIZE_C(0);
-
-   read_tag: d_tag = (is_Elf32 ? swap32(dyn->d_tag) : swap64(dyn->d_tag));
-   if(d_tag == DT_JMPREL){
-      d_ptr = (is_Elf32 ? swap32(dyn->d_un.d_ptr) : swap64(dyn->d_un.d_ptr));
-      info->jmprel = (void*)(info->obj + d_ptr);
-   }else if(d_tag == DT_REL){
-      d_ptr = (is_Elf32 ? swap32(dyn->d_un.d_ptr) : swap64(dyn->d_un.d_ptr));
-      info->rel = (void*)(info->obj + d_ptr);
-   }else if(d_tag == DT_RELA){
-      d_ptr = (is_Elf32 ? swap32(dyn->d_un.d_ptr) : swap64(dyn->d_un.d_ptr));
-      info->rela = (void*)(info->obj + d_ptr);
-   }else if(d_tag == DT_PLTRELSZ){
-      d_val = (is_Elf32 ? swap32(dyn->d_un.d_val) : swap64(dyn->d_un.d_val));
-      info->pltrelsz = d_val;
-   }else if(d_tag == DT_RELSZ){
-      d_val = (is_Elf32 ? swap32(dyn->d_un.d_val) : swap64(dyn->d_un.d_val));
-      info->relsz = d_val;
-   }else if(d_tag == DT_RELASZ){
-      d_val = (is_Elf32 ? swap32(dyn->d_un.d_val) : swap64(dyn->d_un.d_val));
-      info->relasz = d_val;
-   }else if(d_tag == DT_RELENT){
-      d_val = (is_Elf32 ? swap32(dyn->d_un.d_val) : swap64(dyn->d_un.d_val));
-      info->relent = d_val;
-   }else if(d_tag == DT_RELAENT){
-      d_val = (is_Elf32 ? swap32(dyn->d_un.d_val) : swap64(dyn->d_un.d_val));
-      info->relaent = d_val;
-   }else if(d_tag == DT_PLTREL){
-      d_val = (is_Elf32 ? swap32(dyn->d_un.d_val) : swap64(dyn->d_un.d_val));
-      info->pltrel = d_val;
-   }
-   if(d_tag != DT_NULL){
-      ++dyn;
-      goto read_tag;
-   }
 }

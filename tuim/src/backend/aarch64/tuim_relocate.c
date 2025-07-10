@@ -23,128 +23,177 @@
 ***************************************************************************** */
 #include <stddef.h>
 #include <stdint.h>
+#include "elf.h"
+#include "tuim_backend.h"
 /* ------------------------------------
-   This function relocate the memory image of the program.
+   Relocate EM_ARM files.
+   * Reference document:
+     ELF for the Arm (R) 64-bit Architecture (AArch64)
+     https://github.com/ARM-software/abi-aa/blob/main/aaelf64/aaelf64.rst
+   * Date of Issue: 07th April 2025
    * Part of Tuim Project.
-   * Last modified: July 07, 2025.
+   * Last modified: July 10, 2025.
 ------------------------------------ */
 
-#include "../elf.h"
+#define Swap_Half   swap16
+#define Swap_Sword  swap32
+#define Swap_Word   swap32
+#define Swap_Sxword swap64
+#define Swap_Xword  swap64
+#define Swap_Addr   swap64
 
-#include "../../api/tuim_ctx.h"
-#include "../tuim_backend.h"
+#define LINK_ADDRESS(info, v_addr) \
+   ((info)->program_image + ((v_addr) - (info)->start_vaddr))
 
+const Elf32_Byte * tuim_relocate(
+   const  tuim_ctx *ctx,
+   void *ptr,
+   const void *_rel, const void *_dep){
 
-#define DEBUG 0
-#if DEBUG
-   #define DBG(str, ...) printf(str, __VA_ARGS__)
-   #define string(x) ((char*)(x))
-   int printf(const char *, ...);
-   int puts(const char *);
-#else
-   #define DBG(str, ...)
-#endif
-
-
-const uint8_t *
-tuim_relocate(const tuim_ctx *ctx, void *ptr, const void *_rel, const void *_dep){
-   struct tuim_backend *info = ptr;
+   struct tuim_backend * const info  = ptr;
    struct tuim_backend * const * dep = _dep;
-   const Elf64_Rel *rel = _rel;
-   const Elf64_Rela *rela = _rel;
-   const Elf64_Sym *dynsym = info->dynsym;
+   const Elf64_Rel  * const rel    = _rel;
+   const Elf64_Rela * const rela   = _rel;
+   const Elf64_Sym  * const dynsym = info->dynsym;
+   const Elf64_Byte ascii_null = 0;
 
-   const uint8_t *symbol;
-   const Elf64_Sym *sym;
-   Elf64_Addr P, B, S, Delta;
+   const Elf64_Sym  * sym;
+
+   const Elf64_Byte * symbol;
+   Elf64_Half st_shndx;
    Elf64_Sword A;
+   Elf64_Xword r_info, result, st_size;
+   Elf64_Addr r_offset, P, B, S, Delta;
+
    int r_type;
    size_t r_sym;
 
-   /* Dynamic relocations
-      R_AARCH64_ABS64
-      R_AARCH64_AUTH_ABS64
-      R_AARCH64_COPY
-      R_AARCH64_GLOB_DAT
-      R_AARCH64_JUMP_SLOT
-      R_AARCH64_RELATIVE
-      R_AARCH64_TLS_IMPDEF1
-      R_AARCH64_TLS_IMPDEF2
-      R_AARCH64_TLS_DTPREL
-      R_AARCH64_TLS_DTPMOD
-      R_AARCH64_TLS_TPREL 
-      R_AARCH64_TLSDESC
-      R_AARCH64_IRELATIVE
-      R_AARCH64_AUTH_RELATIVE */
+   /* --- initialize relocation variables --- */
 
-   S = tuim_nullptr;
-   symbol = (uint8_t*)"\0";
+   symbol = &ascii_null;
 
-   r_sym = ELF64_R_SYM(swap64(rel->r_info));
-   r_type = ELF64_R_TYPE(swap64(rel->r_info));
-
-   // Address of the symbol reference (place)
-   P = info->program_image + (swap64(rel->r_offset) - info->start_vaddr);
+   r_info = Swap_Xword(rel->r_info);
+   r_sym  = ELF64_R_SYM (r_info);
+   r_type = ELF64_R_TYPE(r_info);
 
    /* From _ELF for the Arm Architecture_:
-      > If the place is subject to a data-type relocation,
-      > the initial value in the place is sign-extended to 32
-      > bits.
-   */
+      > P is the address of the place being relocated
+      > (derived from r_offset). */
+   r_offset = Swap_Addr(rel->r_offset);
+   P = LINK_ADDRESS(info, r_offset);
 
-   // The addend
-   if(info->is_rel){
-      tuim_load8(ctx, &A, P, 1);
+   /* From _ELF for the Arm Architecture_:
+      > A is the addend for the relocation.
+
+      > With the exception of R_<CLS>_COPY all dynamic relocations require
+      > that the place being relocated is an 8-byte aligned 64-bit data
+      > location in ELF64 or a 4-byte aligned 32-bit data location in ELF32.
+
+      > * If the relocation relocates data (Static Data relocations)
+      >   the initial value in the place is sign-extended to 64 bits.
+      > * If the relocation relocates an instruction the immediate field
+      >   of the instruction is extracted, scaled as required by the
+      >   instruction field encoding, and sign-extended to 64 bits. */
+   if(r_type == R_AARCH64_COPY) goto have_addend;
+   if(info->is_rela){
+      A = Swap_Sxword(rela->r_addend);
    }else{
-      A = swap64(rela->r_addend);
-   }
-   // Base address of the symbol definition
-   if(r_sym != UINT64_C(0)){
-
-      sym = dynsym + r_sym;
-      symbol = info->dynstr + swap32(sym->st_name);
-
-      if(sym->st_shndx != STN_UNDEF){
-         B = info->program_image - info->start_vaddr;
-         S = B + swap64(sym->st_value);
-         Delta = info->program_image - info->start_vaddr;
+      if(r_type == R_AARCH64_JUMP_SLOT){
+         /* From _ELF for the Arm Architecture_:
+            > The addend A of such a REL-type relocation shall be zero. */
+         A = INT64_C(0);
       }else{
-         // The symbol is not defined in this ELF.
-         for(dep = _dep; *dep != NULL; ++dep){
-            S = tuim_get_symbol(ctx, *dep, symbol);
-            if(S != tuim_nullptr){
-               B = (*dep)->program_image - (*dep)->start_vaddr;
-               break;
-            }
-         }
-         if(S == tuim_nullptr){
-            return symbol;
-         }
+         tuim_load8(ctx, &A, P, 1);
       }
    }
 
-   // Relocation types that do not need symbol value
-   if(r_type == R_AARCH64_RELATIVE){
-      Elf64_Xword tmp;
-      /* RELATIVE relocations with undefined symbols use the addend
-         as the address of symbols definition. */
-      tmp = Delta + A;
-      tuim_store8(ctx, P, &tmp, 1);
-      DBG(
-         "   R_ARM_RELATIVE(%s): %p <- 0x%08x.\n",
-         string(symbol), P, *((uint32_t*)P)
-      );
-      return NULL;
+   have_addend:
+
+   /* From _ELF for the Arm Architecture_:
+      > S (when used on its own) is the address of the symbol. */
+   if(r_sym == 0){
+      /* there is no symbol reference */
+      S = 0;
+      goto relocate;
    }
 
-   if(r_type == R_AARCH64_GLOB_DAT){
-      Elf64_Xword tmp;
-      tmp = S + A;
-      tuim_store8(ctx, P, &tmp, 1);
-   }else if(r_type == R_AARCH64_JUMP_SLOT){
-      Elf64_Xword tmp;
-      tmp = S + A;
-      tuim_store8(ctx, P, &tmp, 1);
+   sym = dynsym + r_sym;
+   symbol = info->dynstr + Swap_Word(sym->st_name);
+
+   if(sym->st_shndx != STN_UNDEF){
+      /* the symbol is defined here */
+      S = LINK_ADDRESS(info, Swap_Word(sym->st_value));
+      // TODO: Handle st_shndx == SHN_XINDEX
+      goto relocate;
+   }
+
+   /* the symbol is defined in another place */
+   for(dep = _dep; *dep != NULL; ++dep){
+      sym = tuim_get_sym(*dep, symbol);
+      if(sym == NULL) continue;
+      st_shndx = Swap_Half(sym->st_shndx);
+      if(st_shndx != STN_UNDEF) break;
+   }
+   if((sym == NULL) || (st_shndx == STN_UNDEF)) return symbol;
+
+   S = LINK_ADDRESS(*dep, Swap_Word(sym->st_value));
+   // TODO: Handle st_shndx == SHN_XINDEX
+
+   /* --- relocate --- */
+   relocate:
+
+   switch(r_type){
+      case(R_AARCH64_ABS64):
+         /* S + A */
+         break;
+      case(R_AARCH64_AUTH_ABS64):
+         /* SIGN(S + A, SCHEMA(*P)) */
+         break;
+      case(R_AARCH64_COPY):
+         /*  */
+         st_size = Swap_Word(sym->st_size);
+         tuim_memcpy(ctx, P, S, st_size);
+         break;
+      case(R_AARCH64_GLOB_DAT):
+         /* S + A */
+      case(R_AARCH64_JUMP_SLOT):
+         /* S + A */
+         result = S + A;
+         tuim_store8(ctx, P, &result, 1);
+         break;
+      case(R_AARCH64_RELATIVE):
+         /* Delta(S) + A */
+         result = ((S == 0) ? LINK_ADDRESS(info, A) : LINK_ADDRESS(*dep, A));
+         tuim_store8(ctx, P, &result, 1);
+         break;
+      case(R_AARCH64_TLS_IMPDEF1):
+         /* DTPREL(S+A) */
+         break;
+      case(R_AARCH64_TLS_IMPDEF2):
+         /* LDM(S) */
+         break;
+      case(R_AARCH64_TLS_TPREL):
+         /* TPREL(S+A) */
+         break;
+      case(R_AARCH64_TLSDESC):
+         /* TLSDESC(S+A) */
+         break;
+      case(R_AARCH64_IRELATIVE):
+         /* Indirect(Delta(S) + A) */
+         break;
+      case(R_AARCH64_AUTH_RELATIVE):
+         /* SIGN(DELTA(S) + A, SCHEMA(*P)) */
+         break;
+      case(R_AARCH64_AUTH_GLOB_DAT):
+         /* SIGN((S + A), SCHEMA(*P)) */
+         break;
+      case(R_AARCH64_AUTH_TLSDESC):
+         /* SIGN(TLSDESC(S + A), SCHEMA(*P)) */
+         break;
+      case(R_AARCH64_AUTH_IRELATIVE):
+         /* SIGN(Indirect(S + A), SCHEMA(*P)) */
+         break;
+      default:
    }
 
    return NULL;

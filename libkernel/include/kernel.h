@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 #if defined(__unix__)
-   int _sys_write(int fd, void *buf, size_t len);
+   int sys_write(int fd, void *buf, size_t len);
 #endif
 
 #endif /* __KERNEL_H */
