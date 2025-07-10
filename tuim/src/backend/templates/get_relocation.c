@@ -60,7 +60,7 @@ static void READ_DYNAMIC_TABLE(struct tuim_backend *info){
       Elf32_Sword d_tag;
    #elif defined(USE_ELF64_TEMPLATE)
       Elf64_Xword d_val;
-      Elf64_Xsword d_tag;
+      Elf64_Sxword d_tag;
    #endif
 
    info->rel = NULL;
