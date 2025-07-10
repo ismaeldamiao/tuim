@@ -6,7 +6,7 @@
 #if defined(_POSIX_C_SOURCE)
    #include <unistd.h>
 
-   Elf(Addr)
+   Elf_Addr
    tuim_aligned_alloc(const tuim_ctx *ctx, size_t alignment, size_t size){
       void *addr;
       (void)ctx;
@@ -16,7 +16,7 @@
 
       if(posix_memalign(&addr, alignment, size) != 0)
          return tuim_nullptr;
-      return (Elf(Addr))addr;
+      return (Elf_Addr)addr;
    }
 #else
    #error Target OS is not suported

@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include "../tuim_backend.h"
 
-Elf(Addr) tuim_nullptr = (Elf(Addr))NULL;
+Elf_Addr tuim_nullptr = (Elf_Addr)NULL;
 
-Elf(Addr) tuim_malloc(const tuim_ctx *ctx, size_t size){
+Elf_Addr tuim_malloc(const tuim_ctx *ctx, size_t size){
    (void)ctx;
-   return (Elf(Addr))malloc(size);
+   return (Elf_Addr)malloc(size);
 }

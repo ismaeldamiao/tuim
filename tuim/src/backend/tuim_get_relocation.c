@@ -70,12 +70,6 @@ const void* tuim_get_relocation(const tuim_ctx *ctx, void *ptr){
          info->is_rel =  (info->pltrel == DT_REL);
          info->is_rela =  (info->pltrel == DT_RELA);
          info->auxiliary = info->jmprel;
-
-         if((info->relent == SIZE_C(0)) && (info->pltrel == DT_REL)){
-            info->relent = sizeof(Elf(Rel));
-         }else if((info->relaent == SIZE_C(0)) && (info->pltrel == DT_RELA)){
-            info->relaent = sizeof(Elf(Rela));
-         }
       }else{
          info->is_rel = (info->rel != NULL);
          info->is_rela = (!(info->is_rel) && (info->rela != NULL));
@@ -85,9 +79,9 @@ const void* tuim_get_relocation(const tuim_ctx *ctx, void *ptr){
    }
 
    if(info->jmprel != NULL){
-      next = (Elf(Byte)*)(info->auxiliary) + (
+      next = (uint8_t*)(info->auxiliary) + (
          (info->pltrel == DT_REL) ? info->relent : info->relaent);
-      if(next != (Elf(Byte)*)(info->jmprel) + info->pltrelsz){
+      if(next != (uint8_t*)(info->jmprel) + info->pltrelsz){
          info->auxiliary = next;
       }else{
          info->jmprel = NULL;
@@ -97,8 +91,8 @@ const void* tuim_get_relocation(const tuim_ctx *ctx, void *ptr){
          info->auxiliary = ((info->rel != NULL) ? info->rel : info->rela);
       }
    }else if(info->rel != NULL){
-      next = (Elf(Byte)*)(info->auxiliary) + info->relent;
-      if(next != (Elf(Byte)*)(info->rel) + info->relsz){
+      next = (uint8_t*)(info->auxiliary) + info->relent;
+      if(next != (uint8_t*)(info->rel) + info->relsz){
          info->auxiliary = next;
       }else{
          info->rel = NULL;
@@ -108,8 +102,8 @@ const void* tuim_get_relocation(const tuim_ctx *ctx, void *ptr){
          info->auxiliary = info->rela;
       }
    }else if(info->rela != NULL){
-      next = (Elf(Byte)*)(info->auxiliary) + info->relaent;
-      if(next != (Elf(Byte)*)(info->rela) + info->relasz){
+      next = (uint8_t*)(info->auxiliary) + info->relaent;
+      if(next != (uint8_t*)(info->rela) + info->relasz){
          info->auxiliary = next;
       }else{
          info->rela = NULL;

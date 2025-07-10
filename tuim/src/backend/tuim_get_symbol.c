@@ -33,7 +33,6 @@
 #if TUIM_BUILD_FLAGS & TUIM_BF_ELF32
    #define USE_ELF32_TEMPLATE
    #include "templates/get_symbol.c"
-   #undef Elf
    #undef USE_ELF32_TEMPLATE
 #endif
 

@@ -9,7 +9,7 @@
 
 #if defined(_POSIX_C_SOURCE)
    void
-   tuim_mprotect(const tuim_ctx *ctx, Elf(Addr) addr, size_t size, int prot){
+   tuim_mprotect(const tuim_ctx *ctx, Elf_Addr addr, size_t size, int prot){
       int posix_prot = 0;
       (void)ctx;
 

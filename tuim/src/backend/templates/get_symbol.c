@@ -32,7 +32,7 @@
    * Last modified: July 08, 2025.
 ------------------------------------ */
 
-#if 1
+#if 0
    #define USE_ELF32_TEMPLATE
 #endif
 
@@ -104,3 +104,10 @@ static uint64_t GET_SYMBOL(struct tuim_backend *info, const Elf(Byte) *symbol){
    }
    return tuim_nullptr;
 }
+
+
+#undef GET_SYMBOL
+#undef GET_SYM
+#undef Elf
+#undef Swap_Off
+#undef Swap_Addr

@@ -40,6 +40,9 @@
 #define USE_ELF32_TEMPLATE
 #include "relocate.c"
 #undef Elf
+#undef RELOCATE
+#undef ELF32_Rel_addend
+#undef Swap_Addr
 #undef USE_ELF32_TEMPLATE
 
 #define USE_ELF64_TEMPLATE

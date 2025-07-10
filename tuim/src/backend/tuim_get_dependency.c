@@ -34,7 +34,6 @@
 #if TUIM_BUILD_FLAGS & TUIM_BF_ELF32
    #define USE_ELF32_TEMPLATE
    #include "templates/get_dependency.c"
-   #undef Elf
    #undef USE_ELF32_TEMPLATE
 #endif
 
@@ -61,7 +60,7 @@ const uint8_t *tuim_get_dependency(const tuim_ctx *ctx, void *ptr){
          return get_dependency32(ptr);
       else if(obj[EI_CLASS] == ELFCLASS64)
          return get_dependency64(ptr);
-      return 2;
+      return NULL;
    #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF32
       return get_dependency32(ptr);
    #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF64

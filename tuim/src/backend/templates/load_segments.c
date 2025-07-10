@@ -250,3 +250,10 @@ GET_SECTION(const Elf(Byte) *obj, const Elf(Byte) *section){
    const Elf(Shdr) *shdr = GET_SHDR_ENTRY(obj, section);
    return FILE_OFFSET(Swap_Off(shdr->sh_offset));
 }
+
+#undef LOAD_SEGMENTS
+#undef GET_SHDR_ENTRY
+#undef GET_SECTION
+#undef Elf
+#undef Swap_Off
+#undef Swap_Addr

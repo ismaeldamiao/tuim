@@ -6,7 +6,7 @@
    #define restrict
 #endif
 
-void tuim_memcpy(const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n){
+void tuim_memcpy(const tuim_ctx *ctx, Elf_Addr dest, Elf_Addr src, size_t n){
    register uint8_t * restrict c_dest = (void*)dest;
    register const uint8_t * restrict c_src = (void*)src;
    register const uint8_t * const end_addr = c_src + n;
@@ -18,7 +18,7 @@ void tuim_memcpy(const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n){
    }
 }
 
-void tuim_memcpy2(const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n){
+void tuim_memcpy2(const tuim_ctx *ctx, Elf_Addr dest, Elf_Addr src, size_t n){
    register uint16_t * restrict c_dest = (void*)dest;
    register const uint16_t * restrict c_src = (void*)src;
    register const uint16_t * const end_addr = c_src + n;
@@ -30,7 +30,7 @@ void tuim_memcpy2(const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n){
    }
 }
 
-void tuim_memcpy4(const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n){
+void tuim_memcpy4(const tuim_ctx *ctx, Elf_Addr dest, Elf_Addr src, size_t n){
    register uint32_t * restrict c_dest = (void*)dest;
    register const uint32_t * restrict c_src = (void*)src;
    register const uint32_t * const end_addr = c_src + n;
@@ -42,7 +42,7 @@ void tuim_memcpy4(const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n){
    }
 }
 
-void tuim_memcpy8(const tuim_ctx *ctx, Elf(Addr) dest, Elf(Addr) src, size_t n){
+void tuim_memcpy8(const tuim_ctx *ctx, Elf_Addr dest, Elf_Addr src, size_t n){
    register uint64_t * restrict c_dest = (void*)dest;
    register const uint64_t * restrict c_src = (void*)src;
    register const uint64_t * const end_addr = c_src + n;

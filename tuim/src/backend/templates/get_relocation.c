@@ -32,7 +32,7 @@
    * Last modified: July 08, 2025.
 ------------------------------------ */
 
-#if 0
+#if 1
    #define USE_ELF32_TEMPLATE
 #endif
 
@@ -130,4 +130,13 @@ static void READ_DYNAMIC_TABLE(struct tuim_backend *info){
       ++dyn;
       goto read_tag;
    }
+
+   if(info->relent == SIZE_C(0))
+      info->relent = sizeof(Elf(Rel));
+   if(info->relaent == SIZE_C(0))
+      info->relaent = sizeof(Elf(Rela));
 }
+
+#undef READ_DYNAMIC_TABLE
+#undef Elf
+#undef Swap_Addr
