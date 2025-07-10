@@ -24,6 +24,7 @@
 #ifndef TUIM_BACKEND_HOST_H
 #define TUIM_BACKEND_HOST_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include "tuim.h"
 /* ------------------------------------
