@@ -23,7 +23,6 @@
 ***************************************************************************** */
 #include <stddef.h>
 #include <stdint.h>
-#include <threads.h>
 #include "elf.h"
 #include "tuim_backend.h"
 /* ------------------------------------
@@ -32,7 +31,7 @@
    * Last modified: July 08, 2025.
 ------------------------------------ */
 
-#if 1
+#if 0
    #define USE_ELF32_TEMPLATE
 #endif
 
