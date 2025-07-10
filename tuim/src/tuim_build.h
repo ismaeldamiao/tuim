@@ -14,7 +14,7 @@
    #error the C compiler shall be standard compliant
 #endif
 
-#if !defined(__unix__) && !defined(_VSC_VERSION)
+#if !defined(__unix__) && !(__APPLE__ && __MACH__) && !defined(_WIN32)
    #error the host OS is not supported
 #endif
 
@@ -53,7 +53,7 @@
 #define TUIM_BF_ELF32 (1 << 0)
 #define TUIM_BF_ELF64 (1 << 1)
 
-#if defined(__unix__)
+#if defined(__unix__) || (__APPLE__ && __MACH__)
    #define _POSIX_C_SOURCE 200112L
 #endif
 

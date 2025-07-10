@@ -55,9 +55,9 @@ const void* tuim_get_relocation(const tuim_ctx *ctx, void *ptr){
       /* call the correct implementation of read_dynamic_table */
 
       #if (TUIM_BUILD_FLAGS & TUIM_BF_ELF32) && (TUIM_BUILD_FLAGS & TUIM_BF_ELF64)
-         if(obj[EI_CLASS] == ELFCLASS32)
+         if(info->obj[EI_CLASS] == ELFCLASS32)
             read_dynamic_table32(info);
-         else if(obj[EI_CLASS] == ELFCLASS64)
+         else if(info->obj[EI_CLASS] == ELFCLASS64)
             read_dynamic_table64(info);
          return 2;
       #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF32

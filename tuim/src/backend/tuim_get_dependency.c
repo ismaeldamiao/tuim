@@ -56,9 +56,9 @@ const uint8_t *tuim_get_dependency(const tuim_ctx *ctx, void *ptr){
    /* call the correct implementation of tuim_get_dependency */
 
    #if (TUIM_BUILD_FLAGS & TUIM_BF_ELF32) && (TUIM_BUILD_FLAGS & TUIM_BF_ELF64)
-      if(obj[EI_CLASS] == ELFCLASS32)
+      if(info->obj[EI_CLASS] == ELFCLASS32)
          return get_dependency32(ptr);
-      else if(obj[EI_CLASS] == ELFCLASS64)
+      else if(info->obj[EI_CLASS] == ELFCLASS64)
          return get_dependency64(ptr);
       return NULL;
    #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF32
