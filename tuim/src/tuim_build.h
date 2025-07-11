@@ -68,3 +68,15 @@
    defined(__x86_64__)
       #define TUIM_BUILD_FLAGS (TUIM_BF_ELF32 | TUIM_BF_ELF64)
 #endif
+
+#if (defined(__riscv) && __riscv == 32)
+   #define TUIM_BUILD_RISCV32
+#elif (defined(__riscv) && __riscv == 64)
+   #define TUIM_BUILD_RISCV64
+#elif  (defined(__ARM_ARCH) && __ARM_ARCH <= 7)
+   #define TUIM_BUILD_AARCH32
+#elif  (defined(__ARM_ARCH) && __ARM_ARCH >=8)
+   #define TUIM_BUILD_AARCH64
+#elif defined(__x86_64__)
+   #define TUIM_BUILD_AMD64
+#endif

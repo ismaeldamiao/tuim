@@ -1,11 +1,9 @@
-#if defined(__ARM_ARCH)
-   #if __ARM_ARCH < 7
-      #include "armel/tuim_attributes.c"
-   #elif __ARM_ARCH == 7
-      #include "armv7l/tuim_attributes.c"
-   #elif __ARM_ARCH > 7
-      #include "aarch64/tuim_attributes.c"
-   #endif
-#else
-   #error Unknown target architecture
+#if defined(TUIM_BUILD_RISCV32)
+   #error Not implemented yet
+#elif defined(TUIM_BUILD_RISCV64)
+   #error Not implemented yet
+#elif defined(TUIM_BUILD_AARCH32)
+   #include "armel/tuim_attributes.c"
+#elif defined(TUIM_BUILD_AMD64)
+   #include "amd64/tuim_attributes.c"
 #endif
