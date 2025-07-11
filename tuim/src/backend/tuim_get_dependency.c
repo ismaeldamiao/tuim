@@ -43,7 +43,6 @@
    #undef USE_ELF64_TEMPLATE
 #endif
 
-//uint8_t *tuim_get_dependency(uint8_t *obj, void **dyn_ptr, uint8_t *dynstr){
 const uint8_t *tuim_get_dependency(const tuim_ctx *ctx, void *ptr){
    struct tuim_backend *info = ptr;
    (void)ctx;

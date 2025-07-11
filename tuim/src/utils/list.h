@@ -5,10 +5,14 @@
 #include <stdint.h>
 
 #if __STDC_VERSION__ < 202311L
-#define true 1
-#define false 0
-typedef int bool;
-#endif /* __STDC_VERSION__ < 202311L */
+   #define true 1
+   #define false 0
+#endif
+#if __STDC_VERSION__ < 199901L
+   #define bool int
+#elif (__STDC_VERSION__ >= 199901L) && (__STDC_VERSION__ < 202311L)
+   typedef _Bool bool;
+#endif
 
 #if __STDC_VERSION__ >= 202311L
    #define maybe_unused [[maybe_unused]]
@@ -75,7 +79,11 @@ static struct list *list_add(struct list *list, LIST_TYPE data){
 maybe_unused
 static LIST_TYPE list_find(const struct list *list, bool(*property)(LIST_TYPE)){
    struct list_node *previous, *current, *next;
-   LIST_TYPE null = { };
+   #if __STDC_VERSION__ >= 202311L
+      LIST_TYPE null = { };
+   #else
+      LIST_TYPE null = {0};
+   #endif
 
    if(list == NULL) return null;
 

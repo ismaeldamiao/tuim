@@ -96,7 +96,7 @@ static uint64_t GET_SYMBOL(struct tuim_backend *info, const Elf(Byte) *symbol){
       if(st_shndx == STN_UNDEF){
          return tuim_nullptr;
       }else if(st_shndx == SHN_XINDEX){
-         return tuim_nullptr; // FIXME: Find for it on SHT_SYMTAB_SHNDX
+         return tuim_nullptr; /* FIXME: Find for it on SHT_SYMTAB_SHNDX */
       }else{
          address = Swap_Addr(sym->st_value);
          return LINK_ADDRESS(address);

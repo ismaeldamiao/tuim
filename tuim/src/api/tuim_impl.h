@@ -56,9 +56,6 @@ typedef struct tuim_elf_s {
    void *phdr, *shdr, *dyn, *dynstr, *sym;
 } tuim_elf;
 
-//int tuim_mmap(const uint8_t *buf, void *structure);
-//void tuim_munmap(struct file_s *file, struct image_s *image);
-
 void tuim_writeerror(tuim_ctx *ctx, const char * const strings[], int status);
 
 #if 0

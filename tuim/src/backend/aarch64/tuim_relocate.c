@@ -194,6 +194,7 @@ const Elf32_Byte * tuim_relocate(
          /* SIGN(Indirect(S + A), SCHEMA(*P)) */
          break;
       default:
+         (void)1;
    }
 
    return NULL;

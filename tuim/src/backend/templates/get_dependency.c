@@ -49,7 +49,6 @@
    #define Elf(x) Elf64_##x
 #endif
 
-//uint8_t *tuim_get_dependency(uint8_t *obj, void **dyn_ptr, uint8_t *dynstr){
 static const uint8_t *GET_DEPENDENCY(struct tuim_backend *info){
    const Elf(Byte) *dynstr = info->dynstr;
    const Elf(Dyn) *dyn;

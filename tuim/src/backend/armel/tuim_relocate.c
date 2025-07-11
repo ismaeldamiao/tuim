@@ -119,7 +119,7 @@ const Elf32_Byte * tuim_relocate(
    if(sym->st_shndx != STN_UNDEF){
       /* the symbol is defined here */
       S = LINK_ADDRESS(info, Swap_Word(sym->st_value));
-      // TODO: Handle st_shndx == SHN_XINDEX
+      /* TODO: Handle st_shndx == SHN_XINDEX */
       goto have_symbol;
    }
 
@@ -133,7 +133,7 @@ const Elf32_Byte * tuim_relocate(
    if((sym == NULL) || (st_shndx == STN_UNDEF)) return symbol;
 
    S = LINK_ADDRESS(*dep, Swap_Word(sym->st_value));
-   // TODO: Handle st_shndx == SHN_XINDEX
+   /* TODO: Handle st_shndx == SHN_XINDEX */
 
    have_symbol:
 
@@ -172,33 +172,27 @@ const Elf32_Byte * tuim_relocate(
          /* */
          st_size = Swap_Word(sym->st_size);
          tuim_memcpy(ctx, P, S, st_size);
-         DBG("   R_ARM_COPY(%s): 0x%08x <- 0x%08x.\n", string(symbol), P, S);
          break;
       case R_ARM_GLOB_DAT:
          /* (S + A) | T */
          result = (S + A) | T;
          tuim_store4(ctx, P, &result, 1);
-         DBG("   R_ARM_GLOB_DAT(%s): 0x%08x <- 0x%08x.\n",
-         string(symbol), P, result);
          break;
       case R_ARM_JUMP_SLOT:
          /* (S + A) | T */
          result = (S + A) | T;
          tuim_store4(ctx, P, &result, 1);
-         DBG("   R_ARM_JUMP_SLOT(%s): 0x%08x <- 0x%08x.\n",
-         string(symbol), P, result);
          break;
       case R_ARM_RELATIVE:
          /* B(S) + A [Note: see Dynamic relocations] */
          result = ((S == 0) ? LINK_ADDRESS(info, A) : LINK_ADDRESS(*dep, A));
          tuim_store4(ctx, P, &result, 1);
-         DBG("   R_ARM_RELATIVE(%s): 0x%08x <- 0x%08x.\n",
-         string(symbol), P, result);
          break;
       case R_ARM_IRELATIVE:
          /* Reserved for future functionality */
          break;
       default:
+         (void)1;
    }
 
    return NULL;

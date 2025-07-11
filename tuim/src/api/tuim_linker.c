@@ -36,23 +36,6 @@
    * Part of Tuim Project.
    * Last modified: July 05, 2025.
 ------------------------------------ */
-
-#if __STDC_VERSION__ < 202311L
-   #define true 1
-   #define false 0
-#endif
-#if __STDC_VERSION__ < 199901L
-   typedef int bool;
-#elif (__STDC_VERSION__ >= 199901L) && (__STDC_VERSION__ < 202311L)
-   typedef _Bool bool;
-#endif
-
-#if __STDC_VERSION__ < 201112L
-   #define thread_local
-#elif  (__STDC_VERSION__ >= 201112L) && (__STDC_VERSION__ < 202311L)
-   #define thread_local _Thread_local
-#endif
-
 static thread_local const uint8_t *is_that_tmp;
 static bool is_that(void *elf);
 
@@ -117,22 +100,20 @@ void tuim_linker(tuim_ctx *ctx, const void *elf_path){
 }
 
 static void einval(tuim_ctx *ctx){
-   const char * const strings[] = {
-      "ERROR: Invalid arguments passed to tuim_linker",
-      NULL
-   };
+   const char * strings[2] ;
+   strings[0] = "ERROR: Invalid arguments passed to tuim_linker";
+   strings[1] = NULL;
    tuim_writeerror(ctx, strings, TUIM_EINVAL);
 }
 
 static void enosym(tuim_ctx *ctx, uint8_t *elf_path, const uint8_t *symbol){
-   const char * const strings[] = {
-      "ERROR: Can't relocate ",
-      string(elf_path),
-      ", symbol `",
-      string(symbol),
-      "` not found",
-      NULL
-   };
+   const char * strings[6];
+   strings[0] = "ERROR: Can't relocate ";
+   strings[1] = string(elf_path);
+   strings[2] = ", symbol `";
+   strings[3] = string(symbol);
+   strings[4] = "` not found";
+   strings[5] = NULL;
    tuim_writeerror(ctx, strings, TUIM_ENOSYM);
 }
 

@@ -12,22 +12,6 @@
 #include "tuim_ctx.h"
 #include "tuim_impl.h"
 
-#if __STDC_VERSION__ < 202311L
-   #define true 1
-   #define false 0
-#endif
-#if __STDC_VERSION__ < 199901L
-   typedef int bool;
-#elif (__STDC_VERSION__ >= 199901L) && (__STDC_VERSION__ < 202311L)
-   typedef _Bool bool;
-#endif
-
-#if __STDC_VERSION__ < 201112L
-   #define thread_local
-#elif  (__STDC_VERSION__ >= 201112L) && (__STDC_VERSION__ < 202311L)
-   #define thread_local _Thread_local
-#endif
-
 /* helper functions */
 static void einval(tuim_ctx *ctx);
 static void efault(tuim_ctx *ctx, const char *program_name);
@@ -62,26 +46,24 @@ int tuim_exec(tuim_ctx *ctx, const char *exec_path, char *const argv[], char *co
       break;
    }
 
-   // TODO: execute initialization functions
+   /* TODO: execute initialization functions */
    ctx->jump(ctx, entry);
-   // TODO: execute termination function
+   /* TODO: execute termination function */
 
    return -1;
 }
 
 static void einval(tuim_ctx *ctx){
-   const char * const strings[] = {
-      "ERROR: Invalid arguments passed to tuim_jump",
-      NULL
-   };
+   const char * strings[2];
+   strings[0] = "ERROR: Invalid arguments passed to tuim_jump";
+   strings[1] = NULL;
    tuim_writeerror(ctx, strings, TUIM_EINVAL);
 }
 static void efault(tuim_ctx *ctx, const char *program_name){
-   const char * const strings[] = {
-      program_name,
-      ": invalid memory access (segmentation fault)",
-      NULL
-   };
+   const char * strings[3];
+   strings[0] = program_name;
+   strings[1] = ": invalid memory access (segmentation fault)";
+   strings[2] = NULL;
    tuim_writeerror(ctx, strings, TUIM_EFAULT);
 }
 

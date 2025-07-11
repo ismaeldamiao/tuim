@@ -39,23 +39,6 @@
    * Part of Tuim Project.
    * Last modified: July 05, 2025.
 ------------------------------------ */
-
-#if __STDC_VERSION__ < 202311L
-   #define true 1
-   #define false 0
-#endif
-#if __STDC_VERSION__ < 199901L
-   typedef int bool;
-#elif (__STDC_VERSION__ >= 199901L) && (__STDC_VERSION__ < 202311L)
-   typedef _Bool bool;
-#endif
-
-#if __STDC_VERSION__ < 201112L
-   #define thread_local
-#elif  (__STDC_VERSION__ >= 201112L) && (__STDC_VERSION__ < 202311L)
-   #define thread_local _Thread_local
-#endif
-
 #define SIZE_C(x) ((size_t)x##U)
 
 #define EI_MAG0		0
@@ -97,8 +80,6 @@ void tuim_loader(tuim_ctx *ctx, const void *elf_path){
    struct tuim_loader_variables arg;
    tuim_elf elf_tmp;
 
-   DBG("LOG: %s was loaded at ", string(elf_path));
-
    arg.ctx = ctx;
    arg.elf = &elf_tmp;
    elf_tmp.identifier.character_array = (void*)elf_path;
@@ -108,44 +89,39 @@ void tuim_loader(tuim_ctx *ctx, const void *elf_path){
 /* -------------------------------------------------------------------------- */
 
 static void einval(tuim_ctx *ctx){
-   const char * const strings[] = {
-      "ERROR: Invalid arguments passed to tuim_loader",
-      NULL
-   };
+   const char * strings[2];
+   strings[0] = "ERROR: Invalid arguments passed to tuim_loader";
+   strings[1] = NULL;
    tuim_writeerror(ctx, strings, TUIM_EINVAL);
 }
 static void enoent(tuim_ctx *ctx, const uint8_t *elf_path){
-   const char * const strings[] = {
-      "ERROR: ",
-      string(elf_path),
-      " not found",
-      NULL
-   };
+   const char * strings[4];
+   strings[0] = "ERROR: ";
+   strings[1] = string(elf_path);
+   strings[2] = " not found";
+   strings[3] = NULL;
    tuim_writeerror(ctx, strings, TUIM_ENOENT);
 }
 static void enomem(tuim_ctx *ctx){
-   const char * const strings[] = {
-      "ERROR: Not enought memory",
-      NULL
-   };
+   const char * strings[2];
+   strings[0] = "ERROR: Not enought memory";
+   strings[1] = NULL;
    tuim_writeerror(ctx, strings, TUIM_EINVAL);
 }
 static void enoelf(tuim_ctx *ctx, const uint8_t *elf_path){
-   const char * const strings[] = {
-      "ERROR: ",
-      string(elf_path),
-      " is not a ELF",
-      NULL
-   };
+   const char * strings[4];
+   strings[0] = "ERROR: ";
+   strings[1] = string(elf_path);
+   strings[2] = " is not a ELF";
+   strings[3] = NULL;
    tuim_writeerror(ctx, strings, TUIM_ENOELF);
 }
 static void eelfbad(tuim_ctx *ctx, const uint8_t *elf_path){
-   const char * const strings[] = {
-      "ERROR: ",
-      string(elf_path),
-      " was wrong attributes",
-      NULL
-   };
+   const char * strings[4];
+   strings[0] = "ERROR: ";
+   strings[1] = string(elf_path);
+   strings[2] = " was wrong attributes";
+   strings[3] = NULL;
    tuim_writeerror(ctx, strings, TUIM_ENOELF);
 }
 static thread_local const uint8_t *is_that_tmp;

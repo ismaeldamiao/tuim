@@ -1,11 +1,7 @@
 #define DEBUG 0
 #if DEBUG
-   #define DBG(str, ...) printf(str __VA_OPT__(,) __VA_ARGS__)
-   #define string(x) ((char*)(x))
    int printf(const char *, ...);
    int puts(const char *);
-#else
-   #define DBG(str, ...)
 #endif
 
 /* sanity checks */
@@ -25,7 +21,7 @@
    #define false 0
 #endif
 #if __STDC_VERSION__ < 199901L
-   typedef int bool;
+   #define bool int
 #elif (__STDC_VERSION__ >= 199901L) && (__STDC_VERSION__ < 202311L)
    typedef _Bool bool;
 #endif
@@ -40,6 +36,10 @@
    #define alignof(x)
 #elif  (__STDC_VERSION__ >= 201112L) && (__STDC_VERSION__ < 202311L)
    #define alignas(x) _Alignas(x)
+#endif
+
+#if __STDC_VERSION__ < 199901L
+   #define restrict
 #endif
 
 /* Swap macros */

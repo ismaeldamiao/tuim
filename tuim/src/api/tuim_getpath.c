@@ -12,12 +12,6 @@
    * Last modified: June 17, 2025.
 ------------------------------------ */
 
-#if __STDC_VERSION__ < 202311L
-#define true 1
-#define false 0
-typedef int bool;
-#endif /* __STDC_VERSION__ < 202311L */
-
 static uint8_t memory_buffer[1024];
 
 #define ASCII_SLASH UINT8_C(0x2f)
@@ -39,11 +33,10 @@ void *tuim_getpathexec(tuim_ctx *ctx, char *_elf_name){
    }
 
    if(ctx->tuim_home[0] == UINT8_C(0x00)){
-      const char * const strings[] = {
-         "Error: Environment variable TUIM_HOME not set",
-         NULL
-      };
-      // FIXME: Bad error code
+      const char * strings[2];
+      strings[0] = "Error: Environment variable TUIM_HOME not set";
+      strings[1] = NULL;
+      /* FIXME: Bad error code */
       tuim_writeerror(ctx, strings, TUIM_ENOELF);
       return NULL;
    }
@@ -76,11 +69,10 @@ void *tuim_getpathdyn(tuim_ctx *ctx, char *_elf_name){
    }
 
    if(ctx->tuim_home[0] == UINT8_C(0x00)){
-      const char * const strings[] = {
-         "Error: Environment variable TUIM_HOME not set",
-         NULL
-      };
-      // FIXME: Bad error code
+      const char * strings[2];
+      strings[0] = "Error: Environment variable TUIM_HOME not set";
+      strings[1] = NULL;
+      /* FIXME: Bad error code */
       tuim_writeerror(ctx, strings, TUIM_ENOELF);
       return NULL;
    }

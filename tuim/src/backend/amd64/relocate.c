@@ -330,6 +330,7 @@ const Elf32_Byte * RELOCATE(
             break;
       #endif
       default:
+         (void)1;
    }
 
    return NULL;

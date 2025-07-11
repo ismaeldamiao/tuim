@@ -149,8 +149,6 @@ static int LOAD_SEGMENTS(
       return 1;
    }
 
-   DBG("0x%llx\n", (unsigned long long)program_image);
-
    /* --- Read and load loadable segments --- */
 
    for(i = 0; i < e_phnum; ++i){
