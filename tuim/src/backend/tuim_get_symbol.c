@@ -47,13 +47,13 @@ const void *tuim_get_sym(void *ptr, const uint8_t *symbol){
    /* call the correct implementation of tuim_get_symbol */
 
    #if (TUIM_BUILD_FLAGS & TUIM_BF_ELF32) && (TUIM_BUILD_FLAGS & TUIM_BF_ELF64)
-      const uint8_t * obj = (struct tuim_backend *)->obj;
+      const uint8_t * obj = ((struct tuim_backend *)ptr)->obj;
 
       if(obj[EI_CLASS] == ELFCLASS32)
          return get_sym32(ptr, symbol);
       else if(obj[EI_CLASS] == ELFCLASS64)
          return get_sym64(ptr, symbol);
-      return 2;
+      return NULL;
    #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF32
       return get_sym32(ptr, symbol);
    #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF64
@@ -71,7 +71,7 @@ uint64_t tuim_get_symbol(const tuim_ctx *ctx, void *ptr, const uint8_t *symbol){
          return get_symbol32(ptr, symbol);
       else if(obj[EI_CLASS] == ELFCLASS64)
          return get_symbol64(ptr, symbol);
-      return 2;
+      return tuim_nullptr;
    #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF32
       return get_symbol32(ptr, symbol);
    #elif TUIM_BUILD_FLAGS & TUIM_BF_ELF64
