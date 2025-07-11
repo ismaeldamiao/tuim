@@ -27,4 +27,3 @@ jobs:
           export TUIM_HOME=/opt/tuim
           sudo mkdir -p "${TUIM_HOME}"/{bin,include,lib,share}
           sudo cp tuim/bin/tuim $TUIM_HOME/tuim
-          sudo ln -sf $TUIM_HOME/tuim /usr/bin/tuim
