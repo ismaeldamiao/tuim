@@ -18,12 +18,12 @@ jobs:
           version: latest
           platform: ${{ matrix.arch }}
       - name: Build Interpreter
-        shell: sh
+        env:
+          CC: clang
+          CFLAGS: -O3 -c -D __STDC__=1
+          LD: clang
+          LDFLAGS: ""
         working-directory: ${{ github.workspace }}
         run: |
-          export CC="clang"
-          export CFLAGS="-std=c23 -O3 -c"
-          export LD="clang"
-          export LDFLAGS=""
           cd tuim
           make

@@ -14,12 +14,13 @@ jobs:
         run: sudo apt-get install -y clang llvm lld
       - name: Build Interpreter
         shell: sh
+        env:
+          CC: ${{ matrix.c_compiler }}
+          CFLAGS: -O3 -c
+          LD: ${{ matrix.c_compiler }}
+          LDFLAG: ""
         working-directory: ${{ github.workspace }}
         run: |
-          export CC="${{ matrix.c_compiler }}"
-          export CFLAGS="-O3 -c"
-          export LD="${{ matrix.c_compiler }}"
-          export LDFLAGS=""
           cd tuim
           make
       - name: Install Interpreter

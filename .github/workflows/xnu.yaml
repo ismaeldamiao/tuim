@@ -22,6 +22,11 @@ jobs:
           make
       - name: Install Interpreter
         shell: sh
+        env:
+          CC: ${{ matrix.c_compiler }}
+          CFLAGS: -O3 -c
+          LD: ${{ matrix.c_compiler }}
+          LDFLAG: ""
         working-directory: ${{ github.workspace }}
         run: |
           export TUIM_HOME=/opt/tuim
