@@ -10,12 +10,12 @@ jobs:
         run: sudo apt-get install -y clang llvm lld
       - name: Build, install and test
         shell: sh
-        env:
-          OSTYPE: linux-
-          ARCH: amd64
-          TUIM_HOME: /opt/tuim
         working-directory: ${{ github.workspace }}
-        run: sudo su -c "sh -e tuim/scripts/build.sh"
+        run: |
+          export KERNEL="linux"
+          export ARCH="amd64"
+          export TUIM_HOME="/opt/tuim"
+          sudo su -c "sh -e tuim/scripts/build.sh"
   aarch64:
     runs-on: ubuntu-24.04-arm
     steps:
@@ -24,9 +24,9 @@ jobs:
         run: sudo apt-get install -y clang llvm lld
       - name: Build, install and test
         shell: sh
-        env:
-          OSTYPE: linux-
-          ARCH: aarch64
-          TUIM_HOME: /opt/tuim
         working-directory: ${{ github.workspace }}
-        run: sudo su -c "sh -e tuim/scripts/build.sh"
+        run: |
+          export KERNEL="linux"
+          export ARCH="aarch64"
+          export TUIM_HOME="/opt/tuim"
+          sudo su -c "sh -e tuim/scripts/build.sh"

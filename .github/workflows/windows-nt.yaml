@@ -7,20 +7,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build, install and test
-        env:
-          OSTYPE: msys
-          ARCH: amd64
-          TUIM_HOME: C:\Program Files\Tuim
         working-directory: ${{ github.workspace }}
-        run: sudo su -c "sh -e tuim/scripts/build.sh"
+        run: |
+          set KERNEL="windows_nt"
+          set ARCH="amd64"
+          set TUIM_HOME="C:\Program Files\Tuim"
+          sh -e tuim/scripts/build.sh
   aarch64:
     runs-on: windows-11-arm
     steps:
       - uses: actions/checkout@v4
       - name: Build, install and test
-        env:
-          OSTYPE: msys
-          ARCH: aarch64
-          TUIM_HOME: C:\Program Files\Tuim
         working-directory: ${{ github.workspace }}
-        run: sudo su -c "sh -e tuim/scripts/build.sh"
+        run: |
+          set KERNEL="windows_nt"
+          set ARCH="aarch64"
+          set TUIM_HOME="C:\Program Files\Tuim"
+          sh -e tuim/scripts/build.sh

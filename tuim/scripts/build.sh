@@ -27,15 +27,15 @@ fi
 
 cd tuim
 
-if ! [ "${OSTYPE#"linux-"}" = "" ]; then
+if [ "${KERNEL}" = "linux" ]; then
    # Linux
    make ARCH=${ARCH} CFLAGS="${CFLAGS} -D _POSIX_C_SOURCE=200809L" ENTRY=_start tuim
    make ARCH=${ARCH} tuim/arch.h
-elif ! [ "${OSTYPE#"darwin"}" = "" ]; then
+elif [ "${KERNEL}" = "xnu" ]; then
    # XNU
    make CFLAGS="${CFLAGS} -D _POSIX_C_SOURCE=200809L" ENTRY=_main tuim
    make ARCH=${ARCH} tuim/arch.h
-elif [ "${OSTYPE}" = "msys" ]; then
+elif [ "${KERNEL}" = "windows_nt" ]; then
    # Windows NT
    make ENTRY=WinMain tuim
    make ARCH=${ARCH} tuim/arch.h
@@ -47,15 +47,15 @@ cd ..
 
 # install tuim -----------------------------------------------------------------
 
-if [ "${OSTYPE#"linux-"}" != "" ]; then
+if [ "${KERNEL}" = "linux" ]; then
    # Linux
    mkdir -p "${TUIM_HOME}"
    mv tuim/bin/tuim "${TUIM_HOME}/tuim"
-elif [ "${OSTYPE#"darwin"}" != "" ]; then
+elif [ "${KERNEL}" = "xnu" ]; then
    # XNU
    mkdir -p "${TUIM_HOME}"
    mv tuim/bin/tuim "${TUIM_HOME}/tuim"
-elif [ "${OSTYPE}" = "msys" ]; then
+elif [ "${KERNEL}" = "windows_nt" ]; then
    # Windows NT
    mkdir -p "${TUIM_HOME}"
    mv tuim/bin/tuim.exe "${TUIM_HOME}/tuim.exe"
@@ -80,21 +80,8 @@ fi
 . "${TUIM_HOME}/tuim-dev"
 
 cd libkernel
-
-if ! [ "${OSTYPE#"linux-"}" = "" ]; then
-   # Linux
-   make KERNEL=linux libkernel.so
-   make KERNEL=linux tuim/kernel.h
-elif ! [ "${OSTYPE#"darwin"}" = "" ]; then
-   # XNU
-   make KERNEL=xnu libkernel.so
-   make KERNEL=xnu tuim/kernel.h
-elif [ "${OSTYPE}" = "msys" ]; then
-   # Windows NT
-   make KERNEL=windows_nt libkernel.so
-   make KERNEL=windows_nt tuim/kernel.h
-fi
-
+make KERNEL=${KERNEL} libkernel.so
+make KERNEL=${KERNEL} tuim/kernel.h
 cd ..
 mkdir -p "${TUIM_HOME}/lib" "${TUIM_HOME}/include/tuim"
 mv libkernel/lib/libkernel.so "${TUIM_HOME}/lib/libkernel.so"

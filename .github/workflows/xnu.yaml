@@ -8,21 +8,21 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build, install and test
         shell: sh
-        env:
-          OSTYPE: darwin
-          ARCH: aarch64
-          TUIM_HOME: /Applications/Tuim.app
         working-directory: ${{ github.workspace }}
-        run: sudo su -c "sh -e tuim/scripts/build.sh"
+        run: |
+          export KERNEL="xnu"
+          export ARCH="aarch64"
+          export TUIM_HOME="/Applications/Tuim.app"
+          sudo "sh -e tuim/scripts/build.sh"
   amd64:
     runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - name: Build, install and test
         shell: sh
-        env:
-          OSTYPE: darwin
-          ARCH: amd64
-          TUIM_HOME: /Applications/Tuim.app
         working-directory: ${{ github.workspace }}
-        run: sudo su -c "sh -e tuim/scripts/build.sh"
+        run: |
+          export KERNEL="xnu"
+          export ARCH="amd64"
+          export TUIM_HOME="/Applications/Tuim.app"
+          sudo "sh -e tuim/scripts/build.sh"
