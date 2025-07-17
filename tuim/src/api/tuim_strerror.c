@@ -1,8 +1,5 @@
-#include "tuim.h"
-#include "tuim_ctx.h"
-
-#include "ascii/ascii.h"
+#include "tuim_impl.h"
 
 char *tuim_strerror(tuim_ctx *ctx){
-   return string(ctx->strerror);
+   return ctx->strerror;
 }

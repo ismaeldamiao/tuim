@@ -1,16 +1,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string.h>
 #include <signal.h>
 #include <setjmp.h>
 
-#include "ascii/ascii.h"
-#include "ascii/string.h"
-#include "list.h"
-
-#include "tuim.h"
-#include "tuim_ctx.h"
 #include "tuim_impl.h"
+#include "list.h"
 
 /* helper functions */
 static void einval(tuim_ctx *ctx);
@@ -19,7 +15,7 @@ static void efault(tuim_ctx *ctx, const char *program_name);
 static thread_local jmp_buf env;
 static void sigsegv(int signal);
 
-static thread_local const uint8_t *is_that_tmp;
+static thread_local const char *is_that_tmp;
 static bool is_that(void *elf);
 
 int tuim_exec(tuim_ctx *ctx, const char *exec_path, char *const argv[], char *const envp[]){
@@ -28,14 +24,14 @@ int tuim_exec(tuim_ctx *ctx, const char *exec_path, char *const argv[], char *co
 
    (void)envp;
 
-   is_that_tmp = ascii(exec_path);
+   is_that_tmp = (void*)exec_path;
    elf = list_find(ctx->elf_list, is_that);
    if(elf == NULL){
       einval(ctx);
       return -1;
    }
 
-   entry = ctx->get_symbol(ctx, elf->backend_ptr, NULL);
+   entry = ctx->get_symbol(elf, NULL);
 
    signal( SIGSEGV, sigsegv);
    switch(setjmp(env)){
@@ -47,7 +43,7 @@ int tuim_exec(tuim_ctx *ctx, const char *exec_path, char *const argv[], char *co
    }
 
    /* TODO: execute initialization functions */
-   ctx->jump(ctx, entry);
+   ctx->jump(entry);
    /* TODO: execute termination function */
 
    return -1;
@@ -72,8 +68,8 @@ static void sigsegv(int signal){
    longjmp(env, TUIM_SIGSEGV);
 }
 
-static thread_local const uint8_t *is_that_tmp;
+static thread_local const char *is_that_tmp;
 static bool is_that(void *elf){
-   uint8_t *s1 = ((tuim_elf*)(elf))->identifier.character_array;
-   return (ascii_strcmp(s1, is_that_tmp) == 0);
+   char *s1 = (void*)(((tuim_elf*)(elf))->file.path);
+   return (strcmp((void*)s1, (void*)is_that_tmp) == 0);
 }

@@ -1,49 +1,33 @@
-# export CC=clang
-# export CFLAGS="-std=c23 -Wall -Wextra -Wpedantic -O3 -c"
-# export LD=clang
-# export LDFLAGS="-fuse-ld=lld"
-# make
+ARCH=riscv32
+ENTRY=main
+MACHINE=host
 
-TUIM-SOURCES=src/cli/main.c \
-   src/api/tuim_newcontext.c \
-   src/api/tuim_deletecontext.c \
-   src/api/tuim_errno.c \
-   src/api/tuim_strerror.c \
-   src/api/tuim_writeerror.c \
-   src/api/tuim_getpath.c \
-   src/api/tuim_loader.c \
-   src/api/tuim_linker.c \
-   src/api/tuim_exec.c
+DEP-SOURCES=src/dep/fmap.c src/dep/aligned_alloc.c src/dep/mprotect.c
+DEP-OBJECTS=$(DEP-SOURCES:src/%.c=tmp/%.o)
+
+TUIM-SOURCES=src/cli/main.c $(wildcard src/api/*.c)
 TUIM-OBJECTS=$(TUIM-SOURCES:src/%.c=tmp/%.o)
 
-BACKEND-SOURCES=src/backend/host-machine/tuim_jump.c \
-   src/backend/host-machine/tuim_aligned_alloc.c \
-   src/backend/host-machine/tuim_free.c \
-   src/backend/host-machine/tuim_load.c \
-   src/backend/host-machine/tuim_malloc.c \
-   src/backend/host-machine/tuim_memcpy.c \
-   src/backend/host-machine/tuim_memset.c \
-   src/backend/host-machine/tuim_mprotect.c \
-   src/backend/host-machine/tuim_store.c \
-   src/backend/tuim_get_dependency.c \
-   src/backend/tuim_get_relocation.c \
-   src/backend/tuim_load_segments.c \
-   src/backend/tuim_attributes.c \
-   src/backend/tuim_relocate.c \
-   src/backend/tuim_get_symbol.c
-BACKEND-OBJECTS=$(BACKEND-SOURCES:src/%.c=tmp/%.o)
+MACHINE-SOURCES=$(wildcard src/machine-$(MACHINE)/*.c) \
+   $(wildcard src/api/machine-$(MACHINE)/tuim_*.c) \
+	$(wildcard src/arch/$(ARCH)/api/machine-$(MACHINE)/tuim_*.c)
+MACHINE-OBJECTS=$(MACHINE-SOURCES:src/%.c=tmp/%.o)
 
-tuim: $(BACKEND-OBJECTS) $(TUIM-OBJECTS)
+tuim: $(DEP-OBJECTS) $(MACHINE-OBJECTS) $(TUIM-OBJECTS)
 	@ mkdir -p bin
-	$(LD) $(LDFLAGS) -o bin/tuim $(BACKEND-OBJECTS) $(TUIM-OBJECTS)
+	$(LD) $(LDFLAGS) -l c -e $(ENTRY) -o bin/tuim $(DEP-OBJECTS) $(MACHINE-OBJECTS) $(TUIM-OBJECTS)
 
-backend: $(BACKEND-OBJECTS)
+tuim/arch.h: src/arch/$(ARCH)/include/tuim/arch.h
+	@ mkdir -p include/tuim
+	cp src/arch/$(ARCH)/include/tuim/arch.h include/tuim/arch.h
+
+tuim.so: $(MACHINE-OBJECTS)
 	@ mkdir -p lib
-	$(LD) $(LDFLAGS) -o lib/tuim.so $(BACKEND-OBJECTS)
+	$(LD) $(LDFLAGS) -l c --shared -o lib/tuim.so $(MACHINE-OBJECTS)
 
 tmp/%.o: src/%.c
 	@ mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -include src/tuim_build.h $< -o $@
+	$(CC) $(CFLAGS) -I include -I src/arch/$(ARCH)/include -o $@ $<
 
 clean:
-	rm -Rf tmp
+	rm -Rf tmp lib bin

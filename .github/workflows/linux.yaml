@@ -2,31 +2,31 @@ name: Linux workflow
 on: [push, pull_request]
 
 jobs:
-  linux:
+  amd64:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        c_compiler: [gcc, clang]
     steps:
       - uses: actions/checkout@v4
       - name: Install LLVM
         run: sudo apt-get install -y clang llvm lld
-      - name: Build Interpreter
+      - name: Build, install and test
         shell: sh
         env:
-          CC: ${{ matrix.c_compiler }}
-          CFLAGS: -O3 -c
-          LD: ${{ matrix.c_compiler }}
-          LDFLAG: ""
+          OSTYPE: linux-
+          ARCH: amd64
+          TUIM_HOME: /opt/tuim
         working-directory: ${{ github.workspace }}
-        run: |
-          cd tuim
-          make
-      - name: Install Interpreter
+        run: sudo su -c "sh -e tuim/scripts/build.sh"
+  aarch64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install LLVM
+        run: sudo apt-get install -y clang llvm lld
+      - name: Build, install and test
         shell: sh
+        env:
+          OSTYPE: linux-
+          ARCH: aarch64
+          TUIM_HOME: /opt/tuim
         working-directory: ${{ github.workspace }}
-        run: |
-          export TUIM_HOME=/opt/tuim
-          sudo mkdir -p "${TUIM_HOME}"/{bin,include,lib,share}
-          sudo cp tuim/bin/tuim $TUIM_HOME/tuim
+        run: sudo su -c "sh -e tuim/scripts/build.sh"

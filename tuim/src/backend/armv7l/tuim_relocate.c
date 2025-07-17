@@ -1,1 +1,0 @@
-../armel/tuim_relocate.c

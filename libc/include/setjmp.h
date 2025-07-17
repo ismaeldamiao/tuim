@@ -32,9 +32,10 @@ extern "C" {
    Last modified: Jule 16, 2024.
 ***************************************************************************** */
 
-#define setjmp(env)          __setjmp(env)
+typedef long jmp_buf[14];
 
-typedef struct __jmp_buf jmp_buf;
+int __setjmp(jmp_buf);
+#define setjmp(env)          __setjmp(env)
 
 #if defined(__STDC_VERSION__)
 #if __STDC_VERSION__ >= 202311L

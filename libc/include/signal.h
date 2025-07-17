@@ -32,19 +32,23 @@ extern "C" {
    Last modified: Jule 17, 2024.
 ***************************************************************************** */
 
-#define SIGTERM              __SIGTERM
-#define SIGSEGV              __SIGSEGV
-#define SIGINT               __SIGINT
-#define SIGILL               __SIGILL
-#define SIGABRT              __SIGABRT
-#define SIGFPE               __SIGFPE
+int __sigterm, __sigsegv, __sigint, __sigill, __sigabrt, __sigfpe;
 
-#define SIG_DFL              __SIG_DFL
+#define SIGTERM              __sigterm
+#define SIGSEGV              __sigsegv
+#define SIGINT               __sigint
+#define SIGILL               __sigill
+#define SIGABRT              __sigabrt
+#define SIGFPE               __sigfpe
+
+void (*__sig_dfl)(int);
+
+#define SIG_DFL              __sig_dfl
 #define SIG_IGN              __SIG_IGN
 
 #define SIG_ERR              __SIG_ERR
 
-typedef /* unspecified */ sig_atomic_t;
+//typedef /* unspecified */ sig_atomic_t;
 
 void (*signal( int sig, void (*handler) (int))) (int);
 int raise( int sig );

@@ -1,14 +1,21 @@
-SOURCES=src/stdio/puts.c\
-   src/string/strlen.c
-UNIX-OBJECTS=$(SOURCES:src/%.c=tmp/unix-%.o)
+SOURCES=$(wildcard src/**/*.c)
+OBJECTS=$(SOURCES:src/%.c=tmp/%.o)
 
-unix: $(UNIX-OBJECTS)
+libc.so: $(OBJECTS)
 	@ mkdir -p lib
-	$(LD) $(LDFLAGS) $(UNIX-OBJECTS) --shared -l kernel -o lib/libc.so
+	$(LD) $(LDFLAGS) --shared -l kernel -o lib/libc.so $(OBJECTS)
 
-tmp/unix-%.o: src/%.c
+libc.a: $(OBJECTS)
+	@ mkdir -p lib
+	$(AR) $(ARFLAGS) src lib/libc.a $(OBJECTS)
+
+libc.o: $(OBJECTS)
+	@ mkdir -p lib
+	$(LD) $(LDFLAGS) --relocatable -o lib/libc.o $(OBJECTS)
+
+tmp/%.o: src/%.c
 	@ mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -I include -D __unix__=1 $< -o $@
+	$(CC) $(CFLAGS) -I include -o $@ $<
 
 clean:
-	rm -Rf tmp
+	rm -Rf tmp lib

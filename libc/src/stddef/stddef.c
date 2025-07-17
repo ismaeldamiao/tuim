@@ -1,0 +1,1 @@
+void *__null = nullptr;

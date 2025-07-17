@@ -20,35 +20,35 @@
    IN THE SOFTWARE.
 ***************************************************************************** */
 #include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-
-#include "list.h"
-#include "ascii/string.h"
-#include "ascii/ascii.h"
-
-#include "tuim.h"
-#include "tuim_ctx.h"
-#include "tuim_impl.h"
 /* ------------------------------------
    This function relocate a ELF and all they dependencies.
 
    * Part of Tuim Project.
    * Last modified: July 05, 2025.
 ------------------------------------ */
-static thread_local const uint8_t *is_that_tmp;
+#include <stdlib.h>
+#include <string.h>
+
+#include "tuim_impl.h"
+
+#include "list.h"
+
+#define SIZE_C(x) ((size_t)x##U)
+
+static thread_local const char *is_that_tmp;
 static bool is_that(void *elf);
 
 /* helper functions */
 static void einval(tuim_ctx *ctx);
-static void enosym(tuim_ctx *ctx, uint8_t *elf_path, const uint8_t *symbol);
+static void enosym(tuim_ctx *ctx, const char *elf_path, const char *symbol);
 
+/* -------------------------------------------------------------------------- */
 void tuim_linker(tuim_ctx *ctx, const void *elf_path){
    tuim_elf *elf, *elf_dep;
    const void *rel;
    void **dep = NULL;
    size_t dep_count = SIZE_C(0);
-   const uint8_t *symbol;
+   const char *symbol;
 
    /* sanity checks */
 
@@ -66,9 +66,9 @@ void tuim_linker(tuim_ctx *ctx, const void *elf_path){
 
    /* load dependencies */
 
-   get_dependency: elf_path = ctx->get_dependency(ctx, elf->backend_ptr);
+   get_dependency: elf_path = ctx->get_dependency(elf);
    if(elf_path != NULL){
-      elf_path = tuim_getpathdyn(ctx, string(elf_path));
+      elf_path = tuim_getpathdyn(ctx, elf_path);
       tuim_loader(ctx, elf_path);
       if(ctx->status != TUIM_SUCCESS) return;
 
@@ -76,7 +76,7 @@ void tuim_linker(tuim_ctx *ctx, const void *elf_path){
       dep = realloc(dep, dep_count * sizeof(void*) + sizeof(NULL));
       is_that_tmp = elf_path;
       elf_dep = list_find(ctx->elf_list, is_that);
-      dep[dep_count-SIZE_C(1)] = elf_dep->backend_ptr;
+      dep[dep_count-SIZE_C(1)] = elf_dep;
       dep[dep_count] = NULL;
 
       /* NOTE: recursive call may be not the best solution due to the risk of
@@ -88,17 +88,17 @@ void tuim_linker(tuim_ctx *ctx, const void *elf_path){
 
    /* relocate */
 
-   get_relocation: rel = ctx->get_relocation(ctx, elf->backend_ptr);
+   get_relocation: rel = ctx->get_relocation(elf);
    if(rel != NULL){
-      symbol = ctx->relocate(ctx, elf->backend_ptr, rel, dep);
+      symbol = (void*)(ctx->relocate(elf, rel, dep));
       if(symbol != NULL){
-         enosym(ctx, elf->identifier.character_array, symbol);
+         enosym(ctx, elf->file.path, symbol);
          return;
       }
       goto get_relocation;
    }
 }
-
+/* -------------------------------------------------------------------------- */
 static void einval(tuim_ctx *ctx){
    const char * strings[2] ;
    strings[0] = "ERROR: Invalid arguments passed to tuim_linker";
@@ -106,19 +106,19 @@ static void einval(tuim_ctx *ctx){
    tuim_writeerror(ctx, strings, TUIM_EINVAL);
 }
 
-static void enosym(tuim_ctx *ctx, uint8_t *elf_path, const uint8_t *symbol){
+static void enosym(tuim_ctx *ctx, const char *elf_path, const char *symbol){
    const char * strings[6];
    strings[0] = "ERROR: Can't relocate ";
-   strings[1] = string(elf_path);
+   strings[1] = elf_path;
    strings[2] = ", symbol `";
-   strings[3] = string(symbol);
+   strings[3] = symbol;
    strings[4] = "` not found";
    strings[5] = NULL;
    tuim_writeerror(ctx, strings, TUIM_ENOSYM);
 }
 
-static thread_local const uint8_t *is_that_tmp;
+static thread_local const char *is_that_tmp;
 static bool is_that(void *elf){
-   uint8_t *s1 = ((tuim_elf*)(elf))->identifier.character_array;
-   return (ascii_strcmp(s1, is_that_tmp) == 0);
+   const char *s1 = ((tuim_elf*)(elf))->file.path;
+   return (strcmp(s1, is_that_tmp) == 0);
 }

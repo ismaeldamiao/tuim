@@ -2,28 +2,25 @@ name: Windows NT workflow
 on: [push, pull_request]
 
 jobs:
-  windows:
+  amd64:
     runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64, amd64_x86, amd64_arm64]
     steps:
       - uses: actions/checkout@v4
-      - uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: ${{ matrix.arch }}
-      - uses: egor-tensin/setup-clang@v1
-        with:
-          version: latest
-          platform: ${{ matrix.arch }}
-      - name: Build Interpreter
+      - name: Build, install and test
         env:
-          CC: clang
-          CFLAGS: -O3 -c -D __STDC__=1
-          LD: clang
-          LDFLAGS: ""
+          OSTYPE: msys
+          ARCH: amd64
+          TUIM_HOME: C:\Program Files\Tuim
         working-directory: ${{ github.workspace }}
-        run: |
-          cd tuim
-          make
+        run: sudo su -c "sh -e tuim/scripts/build.sh"
+  aarch64:
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build, install and test
+        env:
+          OSTYPE: msys
+          ARCH: aarch64
+          TUIM_HOME: C:\Program Files\Tuim
+        working-directory: ${{ github.workspace }}
+        run: sudo su -c "sh -e tuim/scripts/build.sh"

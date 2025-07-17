@@ -23,7 +23,7 @@ export ASMFLAGS="-triple armv4t-unknown-unknown-eabi \
 alias as="${ASM} ${ASMFLAGS}"
 
 # C preprocessor
-export CPP="clang -cc1 -E -P"
+export CPP="clang -cc1 -E -P -I '${TUIM_HOME}/include'"
 export CPPFLAGS="-triple armv4t-unknown-unknown-eabi"
 alias cpp="${CPP} ${CPPFLAGS}"
 

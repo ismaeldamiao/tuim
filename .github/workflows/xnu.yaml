@@ -2,33 +2,27 @@ name: XNU workflow
 on: [push, pull_request]
 
 jobs:
-  xnu:
+  aach64:
     runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        c_compiler: [gcc, clang]
     steps:
       - uses: actions/checkout@v4
-      - name: Build Interpreter
-        shell: sh
-        working-directory: ${{ github.workspace }}
-        run: |
-          export CC="${{ matrix.c_compiler }}"
-          export CFLAGS="-O3 -c"
-          export LD="${{ matrix.c_compiler }}"
-          export LDFLAGS=""
-          cd tuim
-          make
-      - name: Install Interpreter
+      - name: Build, install and test
         shell: sh
         env:
-          CC: ${{ matrix.c_compiler }}
-          CFLAGS: -O3 -c
-          LD: ${{ matrix.c_compiler }}
-          LDFLAG: ""
+          OSTYPE: darwin
+          ARCH: aarch64
+          TUIM_HOME: /Applications/Tuim.app
         working-directory: ${{ github.workspace }}
-        run: |
-          export TUIM_HOME=/opt/tuim
-          sudo mkdir -p "${TUIM_HOME}"/{bin,include,lib,share}
-          sudo cp tuim/bin/tuim $TUIM_HOME/tuim
+        run: sudo su -c "sh -e tuim/scripts/build.sh"
+  amd64:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build, install and test
+        shell: sh
+        env:
+          OSTYPE: darwin
+          ARCH: amd64
+          TUIM_HOME: /Applications/Tuim.app
+        working-directory: ${{ github.workspace }}
+        run: sudo su -c "sh -e tuim/scripts/build.sh"

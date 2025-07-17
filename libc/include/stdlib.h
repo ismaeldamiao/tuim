@@ -66,6 +66,8 @@ void free(void *);
 void *aligned_alloc(size_t alignment, size_t size);
 size_t memalignment(const void *p);
 
+void __mprotect(void *ptr, size_t size, int prot);
+
 #if defined(__STDC_VERSION__)
 #if __STDC_VERSION__ < 201112L
    void abort(void);

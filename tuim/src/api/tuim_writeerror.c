@@ -1,12 +1,12 @@
 #include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-#include "tuim_ctx.h"
 /* ------------------------------------
    This is a helper function to write easily the strerror.
    * Part of Tuim Project.
    * Last modified: June 17, 2025.
 ------------------------------------ */
+#include <string.h>
+
+#include "tuim_impl.h"
 
 static thread_local char memory_buffer[2048];
 

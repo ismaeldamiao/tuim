@@ -22,19 +22,15 @@
    IN THE SOFTWARE.
 ***************************************************************************** */
 #include <stddef.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#if __STDC_VERSION__ >= 202311L && __has_include(<tuim.h>)
-#include <tuim.h>
-#else
-#include "../api/tuim.h"
-#endif
 /* ------------------------------------
    This is the command line front-end for the Tuim project.
    * Part of Tuim Project.
-   * Last modified: July 07, 2025.
+   * Last modified: July 14, 2025.
 ------------------------------------ */
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <tuim.h>
 
 int main(int argc, char **argv){
    tuim_ctx *ctx;
@@ -113,8 +109,8 @@ int main(int argc, char **argv){
       return _errno;
    }
 
-#if 0
+
    tuim_deletecontext(ctx);
-#endif
+
    return _errno;
 }

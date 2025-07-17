@@ -98,6 +98,8 @@ FILE *freopen(const char *filename, const char *mode, FILE *stream);
 void setbuf(FILE *stream, char *buf);
 int setvbuf(FILE *stream, char *buf, int mode, size_t size);
 
+void *__fmap(FILE *stream);
+
 int printf(const char * restrict format, ...);
 int fprintf(FILE * restrict stream, const char * restrict format, ...);
 int sprintf(char * restrict s, const char * restrict format, ...);
