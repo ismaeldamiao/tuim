@@ -10,7 +10,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="assets/img/logo.ico" type="image/x-icon"/>
-    <title>Tuim Project</title>
+    <title>Download tuim</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <!-- Tailwind CSS -->
@@ -24,10 +24,10 @@
         <nav>
             <ul class="flex space-x-4 justify-center md:justify-end">
                 <li>
-                    <span
-                        class="text-text-primary underline decoration-secondary decoration-2 hover:cursor-pointer select-none">
+                    <a href="./index.html"
+                        class="text-text-secondary hover:text-text-primary hover:underline hover:decoration-secondary decoration-2">
                         Home
-                    </span>
+                    </a>
                 </li>
                 <li>
                     <a href="https://github.com/ismaeldamiao/tuim" target="_blank"
@@ -47,14 +47,16 @@
 
     <!-- Main content -->
     <div class="mt-48 md:mt-40 mb-48 md:mb-40 flex-grow" align="center">
-        <img src="assets/img/logo-nobg.png" alt="tuim logo" width="200" align="center">
-        <h1 class="font-bold text-4xl text-primary">Tuim Project</h1>
-        <h2 class="font-normal text-secondary text-xl mt-2">Built to fly. Designed to adapt.</h2>
-        <a href="./download.html">
-            <button
-                class="bg-primary font-semibold text-text-primary px-4 py-2 my-8 rounded hover:bg-secondary hover:text-primary">Download
-                Tuim</button>
-        </a>
+        <h1 class="font-bold text-4xl text-primary">Download Tuim</h1>
+        <h2 class="font-normal text-lg my-4 text-secondary">Version 1.0</h2>
+        <div class="flex justify-center gap-4 md:gap-16 my-16 text-text-secondary">
+            <a href="https://github.com/ismaeldamiao/tuim/archive/refs/heads/main.zip"><i class="fa fa-linux text-5xl hover:text-primary hover:cursor-pointer hover:bg-text-primary p-6 rounded-md"></i></a>
+            <a href="https://github.com/ismaeldamiao/tuim/archive/refs/heads/main.zip"><i class="fa fa-apple text-5xl hover:text-primary hover:cursor-pointer hover:bg-text-primary p-6 rounded-md"></i></a>
+            <a href="https://github.com/ismaeldamiao/tuim/archive/refs/heads/main.zip"><i class="fa fa-windows text-5xl hover:text-primary hover:cursor-pointer hover:bg-text-primary p-6 rounded-md"></i></a>
+        </div>
+        <p class="text-sm text-text-primary mt-4">
+            For further informations about this version check the <a href="https://github.com/ismaeldamiao/tuim/releases/tag/v1.0" class="font-semibold text-text-primary hover:text-text-primary hover:underline hover:decoration-secondary decoration-2">release notes <i class="fa fa-external-link"></i></a>.
+        </p>
     </div>
 
     <!-- Footer -->
