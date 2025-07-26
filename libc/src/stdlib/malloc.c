@@ -28,7 +28,7 @@ void* malloc(size_t size) {
       int prot, flags;
       off_t offset = (off_t)0;
 
-      block = (free_block*)sys_mmap(NULL, size, prot, flags, 0, offset);
+      block = (free_block*)mmap(NULL, size, prot, flags, 0, offset);
    #endif
    block->size = size;
 

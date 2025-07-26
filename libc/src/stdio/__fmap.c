@@ -12,11 +12,11 @@ void *__fmap(FILE *stream){
       const off_t offset = (off_t)0;
       off_t position_indicator_bak;
 
-      position_indicator_bak = sys_lseek(stream->fd, offset, SEEK_CUR);
-      length = sys_lseek(stream->fd, offset, SEEK_END);
-      sys_lseek(stream->fd, position_indicator_bak, SEEK_SET);
+      position_indicator_bak = lseek(stream->fd, offset, SEEK_CUR);
+      length = lseek(stream->fd, offset, SEEK_END);
+      lseek(stream->fd, position_indicator_bak, SEEK_SET);
 
-      ptr = sys_mmap(NULL, length, prot, flags, stream->fd, offset);
+      ptr = mmap(NULL, length, prot, flags, stream->fd, offset);
    #endif
 
    return ptr;

@@ -6,8 +6,8 @@
 int puts(const char *s){
    #if   tuim_kernel == tuim_linux || \
          tuim_kernel == tuim_xnu
-      sys_write(1, s, strlen(s));
-      sys_write(1, "\n", (size_t)1U);
+      write(1, s, strlen(s));
+      write(1, "\n", (size_t)1U);
    #else
       #error Target kernel is not supported
    #endif

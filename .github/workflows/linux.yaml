@@ -12,11 +12,12 @@ jobs:
         shell: sh
         working-directory: ${{ github.workspace }}
         run: |
-          export KERNEL="linux"
-          export ARCH="amd64"
           export TUIM_HOME="/opt/tuim"
-          sudo su -c "sh -e tuim/scripts/build.sh"
-  aarch64:
+          export PREFIX="/usr/local"
+          cp tuim/src/arch-amd64.h ./arch.h
+          cp tuim/etc/profile.d/environment-amd64.sh ./environment.sh
+          sudo su -c "sh -e docs/assets/linux.sh"
+  linux:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +27,8 @@ jobs:
         shell: sh
         working-directory: ${{ github.workspace }}
         run: |
-          export KERNEL="linux"
-          export ARCH="aarch64"
           export TUIM_HOME="/opt/tuim"
-          sudo su -c "sh -e tuim/scripts/build.sh"
+          export PREFIX="/usr/local"
+          cp tuim/src/arch-aarch64.h ./arch.h
+          cp tuim/etc/profile.d/environment-aarch64.sh ./environment.sh
+          sudo su -c "sh -e docs/assets/linux.sh"

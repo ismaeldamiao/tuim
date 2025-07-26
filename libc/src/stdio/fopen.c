@@ -15,7 +15,7 @@ FILE *fopen(const char *filename, const char *mode){
    #if   tuim_kernel == tuim_linux || \
          tuim_kernel == tuim_xnu
       int flags;
-      f->fd = sys_open(filename, flags);
+      f->fd = open(filename, flags);
       if(f->fd == -1){
          free(f);
          return NULL;

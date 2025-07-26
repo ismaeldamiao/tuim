@@ -6,7 +6,7 @@ int fclose(FILE *stream){
 
    #if   tuim_kernel == tuim_linux || \
          tuim_kernel == tuim_xnu
-      sys_close(stream->fd);
+      close(stream->fd);
    #endif
 
    return 0;

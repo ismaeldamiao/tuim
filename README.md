@@ -64,6 +64,46 @@ Documentation is written in LaTeX,
 you can build it or buy a compiled PDF at
 <https://patreon.com/ismaeldamiao>.
 
+### Project structure
+
+The project structure is:
+
+```
+<The Tuim Project root directory>
+|-- CITATION.cff
+|-- LICENSE
+|-- README.md
+|-- libc                C standard library
+|-- libcrt              compiler runtime library
+|-- libkernel           routines calling the kernel
+|-- tuim                ELF interpreter and their CLI
+`-- www                 website
+```
+
+Except for `www`, sub directories on root directory follow the general
+structure:
+
+```
+<The Tuim Project root directory>
+`-- <sub directory>
+    |-- Makefile
+    |-- README.md
+    |-- bin             scripts and precompiled portable executables, if any
+    |-- docs            documentation
+    |-- include         application programing interfaces
+    |-- lib             precompiled portable shared objects, if any
+    |-- share           ...
+    |   `-- man         manual pages
+    `-- src             source code
+```
+
+Documentation are written in MarkDown and may be displayed on a web browser
+using `docsify`, serve it with:
+
+```bash
+docsify serve <sub directory>/docs
+```
+
 ## License
 
 Tuim is released under the MIT License. See the **[LICENSE](LICENSE)** file for details.
