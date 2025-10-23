@@ -2,6 +2,10 @@
 
 This is a collection of papers writen by developers of The Tuim Project.
 
+> [!CAUTION]
+> The Tuim Project is a work in progress.
+> For now it is designed only for test purposes.
+
 ## Building
 
 > [!note]
