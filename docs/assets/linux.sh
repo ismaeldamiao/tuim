@@ -25,6 +25,7 @@ fi
 # prepare destinatin -----------------------------------------------------------
 
 mkdir -p "${TUIM_HOME}"
+mkdir -p "${TUIM_HOME}/tmp"
 mkdir -p "${TUIM_HOME}/bin"
 mkdir -p "${TUIM_HOME}/lib"
 mkdir -p "${TUIM_HOME}/include/tuim"

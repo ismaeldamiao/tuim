@@ -16,5 +16,6 @@
       "-std=c23",
       "-I",
       "${workspaceFolder}/.include"
-   ]
+   ],
+   "latex-workshop.latex.autoBuild.run": "never"
 }

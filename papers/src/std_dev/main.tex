@@ -1,0 +1,82 @@
+% Copyright © 2025 I.F.F. dos SANTOS <ismaellxd@gmail.com>
+\documentclass[
+   % -- opções da classe memoir --
+   article,                      % indica que é um artigo acadêmico
+   11pt,                         % tamanho da fonte
+   openright,                    % capítulos começam em pág ímpar (insere página vazia caso preciso)
+   twoside,                      % para impressão em recto. Oposto a toweside
+   a4paper,                      % tamanho do papel.
+   sumario = tradicional,        % Para indentar os sumários
+   % -- opções do pacote babel --
+   french,                       % idioma adicional para hifenização
+   spanish,                      % idioma adicional para hifenização
+   brazil,                       % O último idioma é o principal do documento
+   english,                      % idioma adicional para hifenização
+   xcolor=table                  % Tabelas coloridadas
+]{abntex2}
+% --------------------------------------
+% PACOTES
+% --------------------------------------
+\input{settings/all.tex}
+
+
+% --------------------------------------
+% Informações de dados para CAPA e FOLHA DE ROSTO
+% --------------------------------------
+\titulo{%
+   A Development Environment for Source Code Distribution%
+}
+\autor{%
+   I. F. F. dos{ }Santos\thanks{
+      \href{mailto:ismaellxd@gmail.com}{ismaellxd@gmail.com}.
+   }%
+}
+\data{September 25, 2025}
+\local{Maceió}
+
+\makeindex
+
+\begin{document}
+% ------------------------------------------------------------------------------
+% ELEMENTOS PRÉ-TEXTUAIS
+% ------------------------------------------------------------------------------
+\maketitle
+
+\begin{resumoumacoluna}
+   \lipsum[4]
+
+   \vspace{\onelineskip}
+
+   \noindent
+   \textbf{Key words}: Development. Command Line Interface.
+\end{resumoumacoluna}
+
+\tableofcontents*
+\newpage
+% ------------------------------------------------------------------------------
+% ELEMENTOS TEXTUAIS
+% ------------------------------------------------------------------------------
+\textual
+
+\input{textual/introduction.tex}
+\input{textual/env.tex}
+\input{textual/make.tex}
+
+% ------------------------------------------------------------------------------
+% ELEMENTOS PÓS-TEXTUAIS
+% ------------------------------------------------------------------------------
+   \postextual
+   % ---------------------------------------------------------------------------
+   % Referências bibliográficas
+   % ---------------------------------------------------------------------------
+   \bibliography{referencias}
+   % apêndices
+   \newpage
+   \begin{apendicesenv}
+      \input{postextual/ref.tex}
+   \end{apendicesenv}
+   % anexos
+   %\begin{anexosenv}
+   %\end{anexosenv}
+
+\end{document}

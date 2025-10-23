@@ -1,0 +1,33 @@
+\section{Make Scripts}
+
+Make Scripts are planed to be easy to use,
+such that people that wants to build a project can easily do it.
+However Make Scripts may be not so easy to implement the first time,
+but developers are encouraged to write their Make Scripts
+using modular programing, with reutilizable portions of code that can be easily
+ported to others projects.
+
+A Make Script is a shell script named \texttt{Make.sh}.
+The following function shall be available on the terminal section
+such in order to facilitate the usage of Make Scripts.
+
+\begin{lstlisting}[style=sh]
+make ( ) {
+   [ -r "Make.sh" ] && { sh Make.sh $@; return $?; }
+   echo "ERROR: No Make Script found."
+   return 1
+}
+\end{lstlisting}
+
+That shall available as a function, that way someone interested to use
+POSIX Make may disable it.
+
+\begin{lstlisting}[style=sh]
+unset make
+\end{lstlisting}
+
+\subsection{Usage}
+
+\begin{lstlisting}[style=sh]
+make [macro=value...] [command]
+\end{lstlisting}

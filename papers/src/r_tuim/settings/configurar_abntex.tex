@@ -1,0 +1,164 @@
+%  Encoding: UTF-8
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %
+%  Copyright (C) 2023 I. F. F. dos SANTOS
+%
+%  Permission is hereby granted, free of charge, to any person obtaining a copy 
+%  of this software and associated documentation files (the “Software”), to 
+%  deal in the Software without restriction, including without limitation the 
+%  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+%  sell copies of the Software, and to permit persons to whom the Software is 
+%  furnished to do so, subject to the following conditions:
+%
+%  The above copyright notice and this permission notice shall be included in 
+%  all copies or substantial portions of the Software.
+%
+%  THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+%  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+%  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+%  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+%  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+%  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+%  IN THE SOFTWARE.
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %
+
+\renewcommand{\ABNTEXchapterfont}{\bfseries\rmfamily}
+\renewcommand{\ABNTEXsectionfont}{\bfseries\rmfamily}
+\renewcommand{\ABNTEXsubsectionfont}{\bfseries\rmfamily}
+\renewcommand{\ABNTEXsubsubsectionfont}{\bfseries\rmfamily}
+
+\renewcommand{\ABNTEXchapterfontsize}      {\normalsize}
+\renewcommand{\ABNTEXsectionfontsize}      {\normalsize}
+\renewcommand{\ABNTEXsubsectionfontsize}   {\normalsize}
+\renewcommand{\ABNTEXsubsubsectionfontsize}{\normalsize}
+
+% Fontes das entradas do sumario
+\renewcommand{\cftchapterfont}{\bfseries\MakeUppercase}
+\renewcommand{\cftsectionfont}{\bfseries}
+
+%\usepackage[alf]{abntex2cite} % Citações padrão ABNT, em ordem alfabética.
+
+\usepackage[num]{abntex2cite} % Citações padrão ABNT, em ordem numérica.
+\citebrackets[]               % Citações com coxetes.
+
+\tituloestrangeiro{\vspace{-2em}}
+\setlength{\ABNTEXsignwidth}{12cm}
+
+\renewenvironment{dedicatoria}{}{}
+\renewenvironment{agradecimentos}{}{}
+\renewenvironment{epigrafe}{}{}
+\renewenvironment{resumo}{}{}
+
+\providecommand{\imprimirdedicatoria}{}
+\providecommand{\imprimiragradecimentos}{}
+\providecommand{\imprimirepigrafe}{}
+\providecommand{\imprimirresumo}{}
+
+\renewcommand{\dedicatoria}[1]{\renewcommand{\imprimirdedicatoria}{#1}}
+\renewcommand{\agradecimentos}[1]{\renewcommand{\imprimiragradecimentos}{#1}}
+\renewcommand{\epigrafe}[1]{\renewcommand{\imprimirepigrafe}{#1}}
+\renewcommand{\resumo}[1]{\renewcommand{\imprimirresumo}{#1}}
+
+\makeatletter
+\providecommand{\pretextualpreconfigurado}{
+   \abntex@ifnotempty{\imprimirdedicatoria}{
+      \PRIVATEbookmarkthis{\dedicatorianame}
+      \vspace*{\fill}%
+      \hspace*{.45\textwidth}
+      \begin{minipage}{.5\textwidth}
+         \imprimirdedicatoria
+      \end{minipage}
+      \PRIVATEclearpageifneeded
+   }
+   \abntex@ifnotempty{\imprimiragradecimentos}{
+      \pretextualchapter{\agradecimentosname}
+      \imprimiragradecimentos
+      \PRIVATEclearpageifneeded
+   }
+   \abntex@ifnotempty{\imprimirepigrafe}{
+      \PRIVATEbookmarkthis{\epigraphname}
+      \vspace*{\fill}%
+      \hspace*{.45\textwidth}
+      \begin{minipage}{.5\textwidth}
+         \imprimirepigrafe
+      \end{minipage}
+      \PRIVATEclearpageifneeded
+   }
+   \abntex@ifnotempty{\imprimirresumo}{
+      \PRIVATEbookmarkthis{\resumoname}
+      \renewcommand{\abstractnamefont}{\chaptitlefont}
+      \renewcommand{\abstractname}{\ABNTEXchapterupperifneeded{\resumoname}}
+      \begin{abstract}
+         \imprimirresumo
+      \end{abstract}
+      \PRIVATEclearpageifneeded
+   }
+}
+\makeatother
+
+% ---
+% Impressão da Capa
+\renewcommand{\imprimircapa}{%
+   \begin{capa}%
+      \center
+      \MakeUppercase{\imprimirinstituicao}
+
+      \vspace{2em}
+      \imprimirautor
+
+      \vfill
+      \MakeUppercase{\textbf{\imprimirtitulo}}
+      \vfill
+
+      \imprimirlocal
+
+      \imprimirdata
+
+      \vspace*{1cm}
+   \end{capa}
+}
+% ---
+
+
+% ---
+% Folha de rosto
+%   usar \imprimirfolhaderosto* caso deseje imprimir algo no verso da
+%   página no caso de estar no modo twoside. Util para imprimir a Ficha
+%   Bibliografica. Porem, se estiver no modo oneside, a versao sem estrela
+%   é identica.
+
+% ---
+% Conteudo padrao da Folha de Rosto
+\makeatletter
+\renewcommand{\folhaderostocontent}{
+   \begin{center}
+
+      \MakeUppercase{\imprimirautor}
+
+      \vfill
+      \textbf{\imprimirtitulo}
+      \vfill
+
+      \abntex@ifnotempty{\imprimirpreambulo}{
+      \hspace{.45\textwidth}
+      \begin{minipage}{.5\textwidth}
+         \imprimirpreambulo
+
+         \vspace{2em}
+         \imprimirorientadorRotulo~\imprimirorientador\par
+         \abntex@ifnotempty{\imprimircoorientador}{
+         \imprimircoorientadorRotulo~\imprimircoorientador
+         }
+      \end{minipage}
+      }
+
+      \vfill
+
+      \imprimirlocal
+
+      \imprimirdata
+      \vspace*{1cm}
+
+   \end{center}
+}
+\makeatother

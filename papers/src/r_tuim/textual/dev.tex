@@ -1,0 +1,60 @@
+\section{Development Environment}
+
+\lettrine{C}{ode}
+produced withing The Tuim Project follows convections of reference
+\citeonline{std_dev}
+to be built.
+In order to follow that convenctions a terminal using a POSIX compliant
+shell is needed, usually Unix-like systems comes with compliant shells,
+on windows there is a lot of option to get it,
+one is to use the package \texttt{busybox}, it can be installed as follows:
+
+\begin{lstlisting}[style=sh]
+choco install busybox
+# then start with
+busybox sh
+\end{lstlisting}
+
+\dots
+
+The script \texttt{tuim/script/development.sh}
+shall be sourced\dots
+
+\begin{lstlisting}[style=sh]
+. "tuim/scripts/development.sh"
+
+export TUIM_HOME="/opt/tuim"
+
+cd tuim
+make TUIM_HOME="${TUIM_HOME}" install
+cd ..
+
+. "${TUIM_HOME}/etc/profile.d/development.sh"
+
+cd libkernel
+make PREFIX="${TUIM_HOME}" install
+cd ..
+
+cd libc
+make PREFIX="${TUIM_HOME}" install
+cd ..
+
+cd sh
+make PREFIX="${TUIM_HOME}" install
+cd ..
+\end{lstlisting}
+
+At the end is expected to have \texttt{\$\{TUIM\_HOME\}} as:
+
+\begin{lstlisting}
+/opt/tuim
+|-- bin
+|   `-- sh
+|-- etc
+|   |-- profile
+|   `-- profile.d
+|       `-- development.sh
+`-- lib
+    |-- libc.so
+    `-- libkernel.so
+\end{lstlisting}

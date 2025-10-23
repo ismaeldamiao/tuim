@@ -1,0 +1,36 @@
+
+\usepackage{xcolor, color}              % hiperreferencias coloridas
+\usepackage[hyphenbreaks]{breakurl}     % Quebra linha nno comando \url
+\usepackage{url}                        % Bibliografia padrão ABNT.
+
+% Veja mais opções de cores em <https://latexcolor.com/>
+\definecolor{blue(ryb)}{rgb}{0.01, 0.28, 1.0}
+\definecolor{darkmidnightblue}{rgb}{0.0, 0.2, 0.4}
+
+%  Configuração do PDF
+
+\AtBeginDocument{
+   \hypersetup{
+      pdftitle={\imprimirtitulo}, 
+      pdfauthor={\imprimirautor}
+   }
+}
+
+\usepackage{hyperref, bookmark}         % Insercao de hiperreferencias.
+
+
+\hypersetup{
+   pdfcreator={LaTeX with abnTeX2},
+   bookmarksdepth=4,
+   breaklinks=true,%
+   % --------- colored links ---------
+   colorlinks=true,
+   linkcolor=blue(ryb),          % cor das ligações internas
+   citecolor=darkmidnightblue,   % cor das chamadas bibliográficas
+   urlcolor=teal,                % cor dos URL
+   % --------- boxed links ---------
+   %colorlinks=false,
+   %linkbordercolor=blue(ryb),          % cor das ligações internas
+   %citebordercolor=darkmidnightblue,   % cor das chamadas bibliográficas
+   %urlbordercolor=teal,                % cor dos URL
+}

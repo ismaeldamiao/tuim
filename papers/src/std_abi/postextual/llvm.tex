@@ -1,0 +1,43 @@
+\chapter{Setting Up Environment Variables with LLVM}
+
+It is possible to easily get a compliant development environment
+using existing tools from various vendors,
+specially from the LLVM \cite{LLVM} project.
+Here are some examples
+
+\section{Linux}
+
+On Debian and friend, and also Termux,
+tools may be installed with the following command.
+
+\begin{lstlisting}[style=sh]
+apt install -y llvm clang
+\end{lstlisting}
+
+And the following code may be placed on \texttt{\textasciitilde/.bashrc}.
+
+\begin{lstlisting}[style=sh]
+export LD="clang"
+export LDFLAGS="-fuse-ld=lld"
+alias ld="${LD} ${LDFLAGS}"
+
+export ASM="clang"
+export ASMFLAGS="-c"
+alias as="${ASM} ${ASMFLAGS}"
+
+export CPP="clang -E -P"
+export CPPFLAGS=""
+alias cpp="${CPP} ${CPPFLAGS}"
+
+export CC="clang"
+export CCFLAGS="-c"
+alias cc="${CC} ${CFLAGS}"
+
+make ( ) {
+   [ -r "Make.sh" ] && { sh Make.sh $@; return $?; }
+   echo "ERROR: No Make Script found."
+   return 1
+}
+\end{lstlisting}
+
+\subsection{Windows}

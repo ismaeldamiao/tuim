@@ -1,4 +1,5 @@
 .*
+build
 bin
 lib
 tmp
@@ -8,3 +9,4 @@ tuim/include
 !.gitignore
 !.vscode
 !.github
+!.make

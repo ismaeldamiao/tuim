@@ -2,19 +2,45 @@
 
 [I. F. F. dos Santos](mailto:ismaellxd@gmail.com)
 
-Last modified: July 23, 2025.
+Last modified: September 09, 2025.
+
+![Crates.io License](https://img.shields.io/crates/l/MIT)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ismaeldamiao/tuim)
+![GitHub Release](https://img.shields.io/github/v/release/ismaeldamiao/tuim)
+
+!> Tuim is a project in active development,
+for now it is designed only for test purposes.
 
 > This is the reference C Standard Library used by The Tuim Project.
+>
+> Type: Library  
+> API language: C  
+> Shared Object: `libc.so`
 
-## Get started
+!> TODO: Write this document
 
-TODO: Write this section.
+## Appendex
 
-## Donations
+### Author
 
-TODO: Write this section.
+The Tuim Project was created by **I. F. F. dos Santos**.
 
-## Licence
+Contact: [ismaellxd@gmail.com](mailto:ismaellxd@gmail.com)  
+GitHub profle: <https://github.com/ismaeldamiao>
+
+### Donations
+
+Develop The Tuim Project consume a lot of time.
+If the project is useful for you or if you want to see new features on it
+please consider to donate some money.
+
+* **GitHub Sponsors**: https://github.com/sponsors/ismaeldamiao
+* **PayPal**: <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D66EM3DGU35EE>.
+* **PIX**: `ismaellxd@gmail.com`.
+
+### License
+
+Software produced within The Tuim Project are licenced under the MIT licence.
 
 > Copyright © 2024-2025 I.F.F. dos Santos <ismaellxd@gmail.com>
 > 

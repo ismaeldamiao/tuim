@@ -58,51 +58,74 @@ follow in order to work together.
 
 ## Get started
 
+The following steps shall be used to build the standard distribution:
+
+```sh
+. "tuim/scripts/development.sh"
+
+export TUIM_HOME="/opt/tuim"
+
+cd tuim
+make TUIM_HOME="${TUIM_HOME}" install
+cd ..
+
+. "${TUIM_HOME}/etc/profile.d/development.sh"
+
+cd libkernel
+make PREFIX="${TUIM_HOME}" install
+cd ..
+
+cd libc
+make PREFIX="${TUIM_HOME}" install
+cd ..
+
+cd sh
+make PREFIX="${TUIM_HOME}" install
+cd ..
+
+cd tuim
+make PREFIX="${TUIM_HOME}" TUIM_HOME="${TUIM_HOME}" install
+cd ..
+
+# now build for the virtual machine
+cd tuim
+make clean
+make riscv-vm
+make TUIM_HOME="${TUIM_HOME}/opt/riscv-vm" install
+cd ..
+
+. "${TUIM_HOME}/opt/riscv-vm/etc/profile.d/development.sh"
+# ... repeat everything else with PREFIX="${TUIM_HOME}/opt/riscv-vm"
+```
+
+At the end `${TUIM_HOME}` is expected to look as:
+
+```
+[/opt/tuim|C:Program Files\tuim]
+|-- bin
+|   |-- tuim.elf
+|   `-- sh.elf
+|-- etc
+|   |-- profile
+|   `-- profile.d
+|       `-- development.sh
+|-- include
+|   `-- <various files>
+|-- lib
+|   |-- libc.so
+|   `-- libkernel.so
+|-- opt
+|   `-- riscv-vm
+|       |-- <like above>
+|       `-- tuim.so
+`-- tuim[.exe]
+```
+
 You may refer to the [documentation](doc) to get instruction about how
 to build and install Tuim.
 Documentation is written in LaTeX,
 you can build it or buy a compiled PDF at
 <https://patreon.com/ismaeldamiao>.
-
-### Project structure
-
-The project structure is:
-
-```
-<The Tuim Project root directory>
-|-- CITATION.cff
-|-- LICENSE
-|-- README.md
-|-- libc                C standard library
-|-- libcrt              compiler runtime library
-|-- libkernel           routines calling the kernel
-|-- tuim                ELF interpreter and their CLI
-`-- www                 website
-```
-
-Except for `www`, sub directories on root directory follow the general
-structure:
-
-```
-<The Tuim Project root directory>
-`-- <sub directory>
-    |-- Makefile
-    |-- README.md
-    |-- bin             scripts and precompiled portable executables, if any
-    |-- docs            documentation
-    |-- include         application programing interfaces
-    |-- lib             precompiled portable shared objects, if any
-    |-- share           ...
-    |   `-- man         manual pages
-    `-- src             source code
-```
-
-Documentation are written in MarkDown and may be displayed on a web browser
-using `docsify`, serve it with:
-
-```bash
-docsify serve <sub directory>/docs
-```
 
 ## License
 
@@ -130,3 +153,5 @@ Did you like the project? Make a donation so that I can continue working on it.
 - **PayPal**: <https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D66EM3DGU35EE>.
 
 - **PIX**: `ismaellxd@gmail.com`.
+
+https://riscv.org/blog/2023/01/run-32-bit-applications-on-64-bit-linux-kernel-liu-zhiwei-guo-ren-t-head-division-of-alibaba-cloud/

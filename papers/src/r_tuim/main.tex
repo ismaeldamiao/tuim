@@ -1,0 +1,85 @@
+% Copyright © 2025 I.F.F. dos SANTOS <ismaellxd@gmail.com>
+\documentclass[
+   % -- opções da classe memoir --
+   article,                      % indica que é um artigo acadêmico
+   11pt,                         % tamanho da fonte
+   openright,                    % capítulos começam em pág ímpar (insere página vazia caso preciso)
+   twoside,                      % para impressão em recto. Oposto a toweside
+   a4paper,                      % tamanho do papel.
+   sumario = tradicional,        % Para indentar os sumários
+   % -- opções do pacote babel --
+   french,                       % idioma adicional para hifenização
+   spanish,                      % idioma adicional para hifenização
+   brazil,                       % O último idioma é o principal do documento
+   english,                      % idioma adicional para hifenização
+   xcolor=table                  % Tabelas coloridadas
+]{abntex2}
+% --------------------------------------
+% PACOTES
+% --------------------------------------
+\input{settings/all.tex}
+
+
+% --------------------------------------
+% Informações de dados para CAPA e FOLHA DE ROSTO
+% --------------------------------------
+\titulo{%
+   Setting Up a Distribution of Tuim%
+}
+\autor{%
+   I. F. F. dos{ }Santos\thanks{
+      \href{mailto:ismaellxd@gmail.com}{ismaellxd@gmail.com}.
+   }%
+}
+\data{September 26, 2025}
+\local{Maceió}
+
+\makeindex
+
+\begin{document}
+% ------------------------------------------------------------------------------
+% ELEMENTOS PRÉ-TEXTUAIS
+% ------------------------------------------------------------------------------
+\maketitle
+
+\begin{resumoumacoluna}
+   \lettrine{I}{n}
+   this work I show how to build the reference implementation of Tuim
+   and friends, making a standard distribution.
+   The final setup shall be abble to easily run
+   C standard compliant and Lua applications.\todo{Add more features}
+
+   \vspace{\onelineskip}
+
+   \noindent
+   \textbf{Key words}: Tuim. Source Portability. Binary Portability. Interoperability.
+\end{resumoumacoluna}
+
+\tableofcontents*
+\newpage
+% ------------------------------------------------------------------------------
+% ELEMENTOS TEXTUAIS
+% ------------------------------------------------------------------------------
+\textual
+
+\input{textual/introduction.tex}
+\input{textual/dev.tex}
+
+% ------------------------------------------------------------------------------
+% ELEMENTOS PÓS-TEXTUAIS
+% ------------------------------------------------------------------------------
+   \postextual
+   % ---------------------------------------------------------------------------
+   % Referências bibliográficas
+   % ---------------------------------------------------------------------------
+   \bibliography{referencias}
+   % apêndices
+   %\newpage
+   %\begin{apendicesenv}
+   %   \input{postextual/ref.tex}
+   %\end{apendicesenv}
+   % anexos
+   %\begin{anexosenv}
+   %\end{anexosenv}
+
+\end{document}
